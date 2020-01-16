@@ -5,7 +5,7 @@ winning_policies = [[1,1,1,0,0,0,0,0,0], [0,0,0,1,1,1,0,0,0],
 
 class InvalidMoveException(Exception):
 
-    def __init__():
+    def __init__(self):
         pass
 
 
@@ -16,12 +16,12 @@ class TicTacToe:
     game_state = [0 for i in range (0,9)]
 
 
-    def __init__():
+    def __init__(self):
         in_progress = True
         pass
 
 
-    def _winning_move(space):
+    def _winning_move(self, space):
         # Check if it is a winning move
         # calculate vertical matches
         # calculate horizontal matches
@@ -40,7 +40,7 @@ class TicTacToe:
                     return True
 
 
-    def play_move(player_n, space):
+    def play_move(self, player_n, space):
         # Plays the given move by player in given space
         # Returns whether the move is a winning move or not.
         if game_state[space] == 0:
@@ -65,14 +65,14 @@ class Agent:
     policy = {}
     policy_logs = []
 
-    def __init__(player_n, game):
+    def __init__(self, player_n, game):
         self.player_n = player_n
         self.game = game
 
     def play(self):
         # state is an array representing the current array mode
         # Marker is either 1 or 2
-
+        pass
 
     def update_policies(self, alpha):
         for i in range(len(self.policy_logs) -2, -1, -1):
@@ -85,20 +85,13 @@ class Agent:
 
 if __name__ == "__main__":
 
-
-    def update_policies(agent):
-         for policy in agent1.policy_logs
-            # update policies
-            # state probability = state probability + alpha(state probs next - current)
-
-
     def self_play(agent1, agent2):
 
         iterations = 100
         # Hyperparameters
         alpha = 0.2
 
-        for i in range(0,iterations)
+        for i in range(0,iterations):
             game = TicTacToe()
             while game.in_progress:
                 # play game
