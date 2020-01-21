@@ -78,12 +78,12 @@ class Agent:
 
     def state_p(self, game_state, space):
         # return the probability of the game state to win according to policy
-        if self.policy.get(game_state) is None:
+        if self.policy.get(str(game_state)) is None:
             if TicTacToe.winning_state(game_state, self.player_n, space):
                 return 1.0
             return 0.5
         else:
-            return self.policy.get(game_state)
+            return self.policy.get(str(game_state))
 
 
     def play(self):
@@ -135,7 +135,7 @@ class Agent:
         for i in range(len(self.game_logs) -2, -1, -1):
         # update policies
         # state probability = state probability + alpha(state probs next - current)
-            self.policy[self.game_logs[i-1][2]] = self.state_p(self.game_logs[i-1][2], self.game_logs[i-1][1]) + alpha * (
+            self.policy[str(self.game_logs[i-1][2])] = self.state_p(self.game_logs[i-1][2], self.game_logs[i-1][1]) + alpha * (
                 self.state_p(self.game_logs[i][2], self.game_logs[i][1]) - self.state_p(self.game_logs[i-1][2], self.game_logs[i-1][1]))
         self.game_logs = []
 
