@@ -1,6 +1,7 @@
 import numpy as np
 import math
-
+# TODO: Update game to have loss
+# GOAL: All wins/ties against dummy
 
 class InvalidMoveException(Exception):
 
@@ -36,6 +37,7 @@ class TicTacToe:
     in_progress = False
     game_state = None
     logger = None
+    winner = None
 
 
     def __init__(self, logger):
@@ -70,6 +72,7 @@ class TicTacToe:
             if TicTacToe.winning_state(self.game_state, player_n, space):
                 self.in_progress = False
                 self.logger.log_agent_win(player_n)
+                self.winner = player_n
                 return True
             return False
         else:
@@ -92,6 +95,7 @@ class Agent:
 
     policy = {}
     game_logs = []
+
 
     def __init__(self, player_n, exploration):
         self.exploration = exploration
@@ -127,7 +131,7 @@ class Agent:
         # To contain tuples of (probability, move location, game state)
         possible_moves = []
         # Can store this as a list in Game to save computation time
-        for i in range(0,len(game_state)):
+        for i in range(0, len(game_state)):
             if game_state[i] == 0:
                 # we have a possible move
                 possible_game_state = game_state[:]
@@ -169,15 +173,17 @@ class Agent:
         for i in range(len(self.game_logs) -2, -1, -1):
         # update policies
         # state probability = state probability + alpha(state probs next - current)
-            self.policy[str(self.game_logs[i][2])] = self.state_p(self.game_logs[i][2], self.game_logs[i][1]) + alpha * (
-                self.state_p(self.game_logs[i+1][2], self.game_logs[i+1][1]) - self.state_p(self.game_logs[i][2], self.game_logs[i][1]))
+            self.policy[str(self.game_logs[i][2])] = self.state_p(self.game_logs[i][2],
+                self.game_logs[i][1]) + alpha * (self.state_p(self.game_logs[i+1][2],
+                self.game_logs[i+1][1]) - self.state_p(self.game_logs[i][2],
+                self.game_logs[i][1]))
         self.game_logs = []
 
 
 if __name__ == "__main__":
 
 
-    def self_play(agent1, agent2):
+    def intelligent_play(agent1, agent2):
         iterations = 50000
         games_count = iterations
         # Hyperparameters
@@ -206,13 +212,48 @@ if __name__ == "__main__":
             if iterations % (math.ceil(iterations/50)) == 0:
                 alpha = alpha * decrease_factor
             iterations -= 1
-        print("SELF PLAY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
-            (logger.agent_1_wins / games_count), (logger.agent_2_wins / games_count), (logger.ties / games_count)))
+        print("TRAIN VS. LEARNING AGENT: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
+            (logger.agent_1_wins / games_count), (logger.agent_2_wins / games_count),
+            (logger.ties / games_count)))
 
         if logger.agent_1_wins > logger.agent_2_wins:
             return agent1
-        else:
-            return agent2
+        return agent2
+
+
+    def train_vs_dummy(agent1, agent2):
+        iterations = 50000
+        games_count = iterations
+        # Hyperparameters
+        alpha = 0.5
+        decrease_factor = 0.99
+        logger = Logger()
+
+        while iterations > 0:
+            game = TicTacToe(logger)
+            agent1.enter(game)
+            agent2.enter(game)
+            while game.in_progress:
+                if iterations % 2 == 0:
+                    # play game
+                    agent1.play()
+                    if game.in_progress:
+                        agent2.play()
+                else:
+                    agent2.play()
+                    if game.in_progress:
+                        agent1.play()
+            # update policies
+            agent1.update_policies(alpha)
+            # Decrease alpha over time
+            if iterations % (math.ceil(iterations/50)) == 0:
+                alpha = alpha * decrease_factor
+            iterations -= 1
+        print("TRAIN VS DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
+            (logger.agent_1_wins / games_count), (logger.agent_2_wins / games_count),
+            (logger.ties / games_count)))
+
+        return agent1
 
 
     def dummy_tournament(agent1, agent2):
@@ -235,11 +276,20 @@ if __name__ == "__main__":
                     if game.in_progress:
                         agent1.play()
             iterations -= 1
-        print("VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format( ( logger.agent_1_wins / games_count ), ( logger.agent_2_wins / games_count ), ( logger.ties / games_count )))
+        print("VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format( (
+            logger.agent_1_wins / games_count ), ( logger.agent_2_wins / games_count ),
+            ( logger.ties / games_count )))
+
+    AGENT_1 = Agent(1, 0)
+    AGENT_2 = Agent(2, 0.8)
+    train_vs_dummy(AGENT_1, AGENT_2)
+    AGENT_1.set_exploration(0)
+    AGENT_3 = Agent(2, 0.5)
+    dummy_tournament(AGENT_1, AGENT_3)
 
     AGENT_1 = Agent(1, 0.8)
     AGENT_2 = Agent(2, 0.8)
-    WINNER = self_play(AGENT_1, AGENT_2)
+    WINNER = intelligent_play(AGENT_1, AGENT_2)
     WINNER.player_n = 1
     WINNER.set_exploration(0)
     AGENT_3 = Agent(2, 0.5)
