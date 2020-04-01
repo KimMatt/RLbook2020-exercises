@@ -91,23 +91,30 @@ class Agent:
     exploration = None
 
 
-    @staticmethod
-    def mirrored_game_state(game_state):
-        mirrored_game_state = game_state[:]
+    def normalized_game_state(self, game_state):
+        """Normalizes the game state, making all elements /in [-1,0,1] representation where
+        -1 is the opposing player and 1 is the current player.
+
+        Args:
+            game_state ([array]): representation of the tic tac toe board
+            player_n ([int]): the player id (1 or 2)
+
+        Returns:
+            [array]: normalized game state
+        """
+        normalized_game_state = game_state[:]
         for element, i in enumerate(game_state):
-            if element == 1:
-                game_state[i] = 2
-            elif element == 2:
+            if element == self.player_n:
                 game_state[i] = 1
-        return mirrored_game_state
+            elif element != 0:
+                game_state[i] = -1
+        return normalized_game_state
 
 
-    def __init__(self, player_n, exploration, symmetric_aware=False, mirror=False, dummy=False):
+    def __init__(self, player_n, exploration, symmetric_aware=False, dummy=False):
         self.exploration = exploration
         self.player_n = player_n
         self.symmetric_aware = symmetric_aware
-        # If the policies read/updated need to be done in a mirror fashion.
-        self.mirror = mirror
         self.game_logs = []
         self.policy = {}
         self.dummy = dummy
@@ -119,8 +126,8 @@ class Agent:
 
 
     def update_policy(self, game_state, last_move, value):
-        if self.mirror:
-            game_state = Agent.mirrored_game_state(game_state)
+        # Normalize the game state
+        game_state = self.normalized_game_state(game_state)
         # Helper functions for symmetric awareness
         def _swap(i,i_prime, game_state):
             temp = game_state[i]
@@ -164,11 +171,9 @@ class Agent:
 
 
     def state_p(self, game_state, last_move):
-        # TODO: Make this always from the perspective of player 1
-        if self.mirror:
-            game_state = Agent.mirrored_game_state(game_state)
         # return the probability of the game state to win according to policy
-        state_p_value = self.policy.get(str((game_state, last_move)))
+        state_p_value = self.policy.get(
+            str((self.normalized_game_state(game_state), last_move)))
         if state_p_value is None:
             self.update_policy(game_state[:], last_move, 0.5)
             return 0.5
@@ -336,7 +341,7 @@ if __name__ == "__main__":
 
     print("Now with self play")
     AGENT_1 = Agent(1, 0.8)
-    AGENT_2 = Agent(2, 0.8, mirror=True)
+    AGENT_2 = Agent(2, 0.8)
     AGENT_2.set_policy(AGENT_1.policy)
     WINNER = train(50000, AGENT_1, AGENT_2)
     WINNER.player_n = 1
