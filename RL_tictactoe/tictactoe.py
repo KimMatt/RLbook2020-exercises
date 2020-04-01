@@ -1,6 +1,6 @@
 import numpy as np
 import math
-# TODO: Batching
+# TODO: Batching updates
 # GOAL: All wins/ties against dummy
 
 class InvalidMoveException(Exception):
@@ -135,47 +135,22 @@ class Agent:
     def update_policy(self, game_state, last_move, value):
         # Normalize the game state
         game_state = self.normalized_game_state(game_state)
-        # Helper functions for symmetric awareness
-        def _swap(i,i_prime, game_state):
-            temp = game_state[i]
-            game_state[i] = game_state[i_prime]
-            game_state[i_prime] = temp
-
-        def _swap_x(game_state):
-            _swap(0,2, game_state)
-            _swap(3,5, game_state)
-            _swap(6,8, game_state)
-            return game_state
-
-        def _swap_y(game_state):
-            _swap(0,6, game_state)
-            _swap(1,7, game_state)
-            _swap(2,8, game_state)
-            return game_state
-
-        def _swap_diagonal_1(game_state):
-            _swap(0,8, game_state)
-            _swap(3,7, game_state)
-            _swap(1,5, game_state)
-            return game_state
-
-        def _swap_diagonal_2(game_state):
-            _swap(2, 6, game_state)
-            _swap(1, 3, game_state)
-            _swap(5, 7, game_state)
-            return game_state
-
-        if self.symmetric_aware:
-            x_swapped_game_state = _swap_x(game_state[:])
-            y_swapped_game_state = _swap_y(game_state[:])
-            diagonal_swapped_game_state_1 = _swap_diagonal_1(game_state[:])
-            diagonal_swapped_game_state_2 = _swap_diagonal_2(game_state[:])
-            self.policy[str((x_swapped_game_state, last_move))] = value
-            self.policy[str((y_swapped_game_state, last_move))] = value
-            self.policy[str((diagonal_swapped_game_state_1, last_move))] = value
-            self.policy[str((diagonal_swapped_game_state_2, last_move))] = value
         self.policy[str((game_state, last_move))] = value
 
+        if self.symmetric_aware:
+            transform_maps = [{0:2, 1:1, 2:0, 3:5, 4:4, 5:3, 6:8, 7:7, 8:6}, # x mirror
+                          {0:6, 1:7, 2:8, 3:3, 4:4, 5:5, 6:0, 7:1, 8:2}, # y mirror
+                          {0:8, 1:5, 2:2, 3:7, 4:4, 5:1, 6:6, 7:3, 8:0}, # xy mirror
+                          {0:0, 1:3, 2:6, 3:1, 4:4, 5:7, 6:2, 7:5, 8:8}, # yx mirror
+                          {0:2, 1:5, 2:8, 3:1, 4:4, 5:7, 6:0, 7:3, 8:6}, # rotate 90
+                          {0:8, 1:7, 2:6, 3:5, 4:4, 5:3, 6:2, 7:1, 8:0}, # rotate 180
+                          {0:6, 1:3, 2:0, 3:7, 4:4, 5:1, 6:8, 7:5, 8:2}]  # rotate 270
+
+            for transform_map in transform_maps:
+                transformed_game_state = [0 for i in range(0, 9)]
+                for i, element in enumerate(game_state):
+                    transformed_game_state[transform_map[i]] = element
+                self.policy[str((transformed_game_state, transform_map[last_move]))] = value
 
     def set_exploration(self, exploration):
         self.exploration = exploration
@@ -309,7 +284,7 @@ if __name__ == "__main__":
         # Hyperparameters
         alpha = 0.2
         decrease_factor = 0.9
-        decrease_rate = 50
+        decrease_rate = 200
         logger = Logger()
         run_games(iterations, a1, a2, logger, training=True,
                   alpha=alpha, decrease_factor=decrease_factor, decrease_rate=decrease_rate)
