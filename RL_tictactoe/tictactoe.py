@@ -258,7 +258,7 @@ if __name__ == "__main__":
         if kwargs.get('training'):
             training = kwargs.get('training')
             alpha = kwargs.get('alpha') if kwargs.get('alpha') is not None else 0.2
-            decrease_factor = kwargs.get('decrease_factor') if kwargs.get('decrease_factor') is None else 0.9
+            decrease_factor = kwargs.get('decrease_factor') if kwargs.get('decrease_factor') is not None else 0.9
         else:
             training = False
 
