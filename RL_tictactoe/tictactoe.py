@@ -132,10 +132,10 @@ class Agent:
         self.policy = policy
 
 
-    def update_policy(self, game_state, last_move, value):
+    def update_policy(self, game_state, value):
         # Normalize the game state
         game_state = self.normalized_game_state(game_state)
-        self.policy[str((game_state, last_move))] = value
+        self.policy[str(game_state)] = value
 
         if self.symmetric_aware:
             transform_maps = [{0:2, 1:1, 2:0, 3:5, 4:4, 5:3, 6:8, 7:7, 8:6}, # x mirror
@@ -150,7 +150,7 @@ class Agent:
                 transformed_game_state = [0 for i in range(0, 9)]
                 for i, element in enumerate(game_state):
                     transformed_game_state[transform_map[i]] = element
-                self.policy[str((transformed_game_state, transform_map[last_move]))] = value
+                self.policy[str(transformed_game_state)] = value
 
     def set_exploration(self, exploration):
         self.exploration = exploration
@@ -160,12 +160,12 @@ class Agent:
         self.game = game
 
 
-    def state_p(self, game_state, last_move):
+    def state_p(self, game_state):
         # return the probability of the game state to win according to policy
         state_p_value = self.policy.get(
-            str((self.normalized_game_state(game_state), last_move)))
+            str(self.normalized_game_state(game_state)))
         if state_p_value is None:
-            self.update_policy(game_state[:], last_move, 0.5)
+            self.update_policy(game_state[:], 0.5)
             return 0.5
         return state_p_value
 
@@ -177,7 +177,7 @@ class Agent:
             possible_game_state = self.game.game_state[:]
             possible_game_state[move] = self.player_n
             # possible_move_infos = [(percentage_chance_to_win, move, game_state_as_a_result)]
-            possible_move_infos.append((self.state_p(possible_game_state, move), move, possible_game_state))
+            possible_move_infos.append((self.state_p(possible_game_state), move, possible_game_state))
 
         # Based on our exploration value, see if we explore or exploit
         explore = np.random.uniform(0, 1) <= self.exploration
@@ -211,14 +211,14 @@ class Agent:
         if not self.dummy:
             # update final move policy value
             self.update_policy(
-                self.game_logs[-1][2][:], self.game_logs[-1][1], reward)
+                self.game_logs[-1][2][:], reward)
             # back propagate policy values
             for i in range(len(self.game_logs) -2, 0, -1):
             # state probability = state probability + alpha(state probs next - current)
-                current_p = self.state_p(self.game_logs[i][2], self.game_logs[i][1])
-                next_p = self.state_p(self.game_logs[i+1][2], self.game_logs[i+1][1])
+                current_p = self.state_p(self.game_logs[i][2])
+                next_p = self.state_p(self.game_logs[i+1][2])
                 update_p = current_p + (alpha * (next_p - current_p))
-                self.update_policy(self.game_logs[i][2][:], self.game_logs[i][1], update_p)
+                self.update_policy(self.game_logs[i][2][:], update_p)
             # Clear game logs in case we want to play another game with this agent
             self.game_logs = []
 
@@ -228,8 +228,8 @@ if __name__ == "__main__":
     def backprop_agents(game_winner, a1, a2, alpha):
         # set reward values based on game outcome
         if game_winner is None:
-            a1_reward = 0.0
-            a2_reward = 0.0
+            a1_reward = -0.5
+            a2_reward = -0.5
         else:
             a1_reward = 1.0 if game_winner == 1 else -1.0
             a2_reward = 1.0 if game_winner == 2 else -1.0
@@ -282,8 +282,8 @@ if __name__ == "__main__":
 
     def train(iterations, a1, a2):
         # Hyperparameters
-        alpha = 0.2
-        decrease_factor = 0.9
+        alpha = 0.5
+        decrease_factor = 0.95
         decrease_rate = 200
         logger = Logger()
         run_games(iterations, a1, a2, logger, training=True,
@@ -314,46 +314,48 @@ if __name__ == "__main__":
                 (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),
                 (logger.ties / iterations)))
 
-    AGENT_1 = Agent(1, 0.5)
-    AGENT_2 = Agent(2, 0.5, dummy=True)
-    train(50000, AGENT_1, AGENT_2)
-    AGENT_1.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
-    test(5000, AGENT_1, AGENT_3)
+if __name__ == "__main__":
 
-    AGENT_1 = Agent(1, 0.5)
-    AGENT_2 = Agent(2, 0.5)
-    WINNER = train(50000, AGENT_1, AGENT_2)
+    AGENT_1 = Agent(1, 0.05)
+    AGENT_2 = Agent(2, 0.05, dummy=True)
+    train(2000, AGENT_1, AGENT_2)
+    AGENT_1.set_exploration(0)
+    AGENT_3 = Agent(2, 0.05, dummy=True)
+    test(200, AGENT_1, AGENT_3)
+
+    AGENT_1 = Agent(1, 0.05)
+    AGENT_2 = Agent(2, 0.05)
+    WINNER = train(2000, AGENT_1, AGENT_2)
     WINNER.player_n = 1
     WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
-    test(5000, WINNER, AGENT_3)
+    AGENT_3 = Agent(2, 0.05, dummy=True)
+    test(200, WINNER, AGENT_3)
 
     print("Now with symmetric awareness")
-    AGENT_1 = Agent(1, 0.5, symmetric_aware=True)
-    AGENT_2 = Agent(2, 0.5)
+    AGENT_1 = Agent(1, 0.05, symmetric_aware=True)
+    AGENT_2 = Agent(2, 0.05)
     WINNER = train(50000, AGENT_1, AGENT_2)
     WINNER.player_n = 1
     WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
+    AGENT_3 = Agent(2, 0.05, dummy=True)
     test(5000, WINNER, AGENT_3)
 
     print("Now with self play")
-    AGENT_1 = Agent(1, 0.5)
-    AGENT_2 = Agent(2, 0.5)
+    AGENT_1 = Agent(1, 0.05)
+    AGENT_2 = Agent(2, 0.05)
     AGENT_2.set_policy(AGENT_1.policy)
     WINNER = train(50000, AGENT_1, AGENT_2)
     WINNER.player_n = 1
     WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
+    AGENT_3 = Agent(2, 0.05, dummy=True)
     test(5000, WINNER, AGENT_3)
 
     print("Now with self play & symmetric awareness")
-    AGENT_1 = Agent(1, 0.5)
-    AGENT_2 = Agent(2, 0.5)
+    AGENT_1 = Agent(1, 0.05)
+    AGENT_2 = Agent(2, 0.05)
     AGENT_2.set_policy(AGENT_1.policy)
     WINNER = train(50000, AGENT_1, AGENT_2)
     WINNER.player_n = 1
     WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
+    AGENT_3 = Agent(2, 0.05, dummy=True)
     test(5000, WINNER, AGENT_3)
