@@ -53,6 +53,12 @@ class Agent:
         return normalized_game_state
 
 
+
+    # Get the policy map of the agent
+    def get_policy(self):
+        return self.policy 
+
+
     def set_policy(self, policy):
         # In order to allow for shared policies between agents.
         self.policy = policy
@@ -112,6 +118,7 @@ class Agent:
             possible_move_infos.append(
                 (self.state_p(possible_game_state), move, possible_game_state))
 
+        
         # Based on our exploration value, see if we explore or exploit
         explore = np.random.uniform(0, 1) <= self.exploration
         possible_move_infos.sort()

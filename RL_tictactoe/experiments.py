@@ -1,54 +1,89 @@
 import pickle
+import multiprocessing
+import os
+import pandas as pd
+from collections import defaultdict
 
 from src.logger import Logger
 from src.tictactoe import TicTacToe
 from src.agent import Agent
 from src.experiment import train, test
 
+# Train Parallel
+def train_parallel(agents):
+    # separate agents
+    a1 = agents[0]
+    a2 = agents[1]
+
+    # Train
+    train(10000, a1, a2, random=True)
+    a1.set_exploration(0)
+    return a1
+
+
+# Test Parallel
+def test_parallel(agents):
+    #separate agents
+    a1 = agents[0]
+    a2 = agents[1]
+
+    # Test
+    test(10000, a1, a2)
+
+
+# Get the policymap average
+def dictionary_means(dict_list):
+    df = pd.DataFrame(dict_list)
+    df_means = df.mean()
+
+    result = defaultdict(float)
+    for key, val in zip(df_means.index, df_means[:]):
+        result[key] = val
+    return df_means
+
+
+# TESTING PARALLEL AGAINST DUMB AGENTS
+def ensemble_dummy_means():
+    # use half threads as processes
+    threads = int(os.cpu_count() / 2)
+
+
+    # Build training agents  
+    agent_list_train = []
+    for i in range(threads):
+        iter_list = (Agent(1, 0.8),
+                     Agent(2, 0.8, dummy=True)
+                    )
+        agent_list_train.append(iter_list)
+
+
+    # Train agents in parallel with random seeds
+    trained_agents_list = []
+    with multiprocessing.Pool(threads) as p:
+        result = p.map(train_parallel, agent_list_train)
+        trained_agents_list.append(result)
+
+
+    # Build meta agent
+    # - new policy mapping
+    policy_list = [agent.get_policy() for agent in trained_agents_list[0]]
+    df_all = pd.DataFrame(policy_list)
+    new_policymap = dictionary_means(policy_list)
+    # - meta agent
+    meta_agent = Agent(1, 0)
+    meta_agent.set_policy(new_policymap)
+
+
+    # List of (trained + meta agents, test_agent)
+    test_agent = Agent(2, 0.8, dummy=False)
+    agent_list_test = [(train_agent, test_agent) for train_agent in trained_agents_list[0]]
+    agent_list_test.append((meta_agent, test_agent))
+
+
+    # Test all of the agents 
+    p = multiprocessing.Pool(len(agent_list_test))
+    p.map(test_parallel, agent_list_test)
+ 
+# MAIN ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
 if __name__ == "__main__":
-
-    AGENT_1 = Agent(1, 0.8)
-    AGENT_2 = Agent(2, 0.8, dummy=True)
-    train(50000, AGENT_1, AGENT_2)
-    AGENT_1.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
-    test(50000, AGENT_1, AGENT_3)
-    pickle.dump(AGENT_1.policy, open("policies/dummy_trained_agent.p", "wb"))
-
-    AGENT_1 = Agent(1, 0.8)
-    AGENT_2 = Agent(2, 0.8)
-    WINNER = train(50000, AGENT_1, AGENT_2)
-    WINNER.player_n = 1
-    WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.5, dummy=True)
-    test(50000, WINNER, AGENT_3)
-    pickle.dump(WINNER.policy, open("policies/agent_trained_agent.p", "wb"))
-
-    print("Now with symmetric awareness")
-    AGENT_1 = Agent(1, 0.05, symmetric_aware=True)
-    AGENT_2 = Agent(2, 0.05)
-    WINNER = train(50000, AGENT_1, AGENT_2)
-    WINNER.player_n = 1
-    WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.05, dummy=True)
-    test(50000, WINNER, AGENT_3)
-
-    print("Now with self play")
-    AGENT_1 = Agent(1, 0.05)
-    AGENT_2 = Agent(2, 0.05)
-    AGENT_2.set_policy(AGENT_1.policy)
-    WINNER = train(50000, AGENT_1, AGENT_2)
-    WINNER.player_n = 1
-    WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.05, dummy=True)
-    test(50000, WINNER, AGENT_3)
-
-    print("Now with self play & symmetric awareness")
-    AGENT_1 = Agent(1, 0.05)
-    AGENT_2 = Agent(2, 0.05)
-    AGENT_2.set_policy(AGENT_1.policy)
-    WINNER = train(50000, AGENT_1, AGENT_2)
-    WINNER.player_n = 1
-    WINNER.set_exploration(0)
-    AGENT_3 = Agent(2, 0.05, dummy=True)
-    test(50000, WINNER, AGENT_3)
+    pass

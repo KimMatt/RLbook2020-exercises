@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 from .logger import Logger
 from .tictactoe import TicTacToe
@@ -61,7 +62,11 @@ def run_games(iterations, a1, a2, logger, **kwargs):
         games_left -= 1
 
 
-def train(iterations, a1, a2):
+def train(iterations, a1, a2, random=False):
+
+    if random:
+        np.random.seed()
+
     # Hyperparameters
     alpha = 0.2
     decrease_factor = 0.9
