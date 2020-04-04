@@ -16,7 +16,7 @@ class Agent:
     exploration = None
 
 
-    def __init__(self, player_n, exploration, symmetric_aware=False, dummy=False):
+    def __init__(self, player_n, exploration=None, symmetric_aware=False, dummy=False):
         """ Initialize the Agent object with given settings
         Args:
             player_n ([int]): The player #, 1 or 2
@@ -162,3 +162,120 @@ class Agent:
                 self.update_policy(self.game_logs[i][2][:], update_p)
             # Clear game logs in case we want to play another game with this agent
             self.game_logs = []
+
+
+class ExpertPlayer(Agent):
+
+    def __init__(self, player_n):
+        super().__init__(player_n)
+        self.dummy = True
+
+
+    def winning_moves(self, player_n):
+        """Returns list of moves [int] that would result
+        in player_n winning if they took that position.
+        Args:
+            player_n (int): Player to check for
+        Returns:
+            moves (list): List of winning moves
+        """
+
+        possible_moves = self.game.possible_moves()
+
+        moves = []
+
+        for move in possible_moves:
+            next_state = self.game.game_state[:]
+            next_state[move] = player_n
+            if self.game.winning_state(next_state, player_n, move):
+                moves.append(move)
+
+        return moves
+
+
+    def fork_moves(self, player_n):
+        """Returns list of moves [int] where role has
+        two opportunities to win (two non-blocked lines of 2) if
+        they took that position.
+        Args:
+            player_n (int): Player to check for
+        Returns:
+            moves (list): List of fork moves
+        """
+        moves = []
+        possible_moves = self.game.possible_moves()[:]
+        # Note: This is used to test different positions so it may not be role's
+        # actual turn so role-checking is turned off
+        for move in possible_moves:
+            next_state = self.game.game_state[:]
+            next_state[move] = player_n
+            remaining_moves = possible_moves[:]
+            remaining_moves.remove(move)
+            winning_count = 0
+            for move_2 in remaining_moves:
+                test_state = next_state[:]
+                test_state[move_2] = player_n
+                if self.game.winning_state(test_state, player_n, move_2):
+                    winning_count += 1
+            if winning_count >= 2:
+                moves.append(move)
+        return moves
+
+
+    def opposite_corners(self, player_n, opponent_n):
+        """Returns list of moves [int] opposite to an opponent's corner
+        Args:
+            player_n (int): Player to check for
+        Returns:
+            moves (list): List of opposite corner moves
+        """
+        moves = []
+        opposite_corners = {0: 8, 2: 6, 8: 0, 6: 2}
+        for k, v in opposite_corners.items():
+            if self.game.game_state[k] == opponent_n and self.game.game_state[v] == 0:
+                moves.append(v)
+        return moves
+
+
+    def play(self):
+
+        available_moves = self.game.possible_moves()[:]
+        corners = [0,2,6,7]
+        center = 4
+
+        opponent_n = 1 if self.player_n == 2 else 2
+
+        winning_positions = self.winning_moves(self.player_n)
+        blocking_positions = self.winning_moves(opponent_n)
+        fork_positions = self.fork_moves(self.player_n)
+        opponent_forks = self.fork_moves(opponent_n)
+        opposite_corners = self.opposite_corners(self.player_n, opponent_n)
+        available_corners = set(corners).intersection(set(available_moves))
+
+        if self.game.moves == 0:
+            # 1. If first move of the game, play a corner or center
+            corners_and_center = corners + [center]
+            return corners_and_center[random.randint(0, len(5))]
+        if winning_positions:
+            # 2. Check for winning moves
+            return winning_positions[random.randint(0,len(winning_positions))]
+        if blocking_positions:
+            # 3. Check for blocking moves
+            return blocking_positions[random.randint(0,len(blocking_positions))]
+        if fork_positions:
+            # 4. Check for fork positions
+            return fork_positions[random.randint(0, len(fork_positions))]
+        if opponent_forks:
+            # 5. Prevent opponent from using a fork position
+            return opponent_forks[random.randint(0, len(opponent_forks))]
+        if center in available_moves:
+            # 6. Try to play center
+            return center
+        if opposite_corners:
+            # 7. Try to play a corner opposite to opponent
+            return opposite_corners[random.randint(0, len(opposite_corners))]
+        if available_corners:
+            # 8. Try to play any corner
+            return available_corners[random.randint(0, len(available_corners))]
+        # 9. Play anywhere else - i.e. a middle position on a side
+        return available_moves[random.randint(0,len(available_moves))]

@@ -14,9 +14,11 @@ class TicTacToe:
     logger = None
     winner = None
     possible_moves = None
+    moves = None
 
 
     def __init__(self, logger):
+        self.moves = 0
         self.logger = logger
         self.in_progress = True
         # 0 for blank, 1 for x, 2 for o
@@ -47,10 +49,9 @@ class TicTacToe:
                 self.in_progress = False
                 self.logger.log_agent_win(player_n)
                 self.winner = player_n
-                return True
             elif not self.possible_moves:
                 self.in_progress = False
                 self.logger.log_tie()
-            return False
+            self.moves += 1
         else:
             raise InvalidMoveException
