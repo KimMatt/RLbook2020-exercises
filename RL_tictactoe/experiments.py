@@ -13,7 +13,7 @@ if __name__ == "__main__":
     AGENT_1.set_exploration(0)
     AGENT_3 = Agent(2, 0.5, dummy=True)
     test(50000, AGENT_1, AGENT_3)
-    pickle.dump(AGENT_1.policy, open("policies/dummy_trained_agent.py", "wb"))
+    pickle.dump(AGENT_1.policy, open("policies/dummy_trained_agent.p", "wb"))
 
     AGENT_1 = Agent(1, 0.8)
     AGENT_2 = Agent(2, 0.8)
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     WINNER.set_exploration(0)
     AGENT_3 = Agent(2, 0.5, dummy=True)
     test(50000, WINNER, AGENT_3)
-    pickle.dump(WINNER.policy, open("policies/agent_trained_agent.py", "wb"))
+    pickle.dump(WINNER.policy, open("policies/agent_trained_agent.p", "wb"))
 
     print("Now with symmetric awareness")
     AGENT_1 = Agent(1, 0.05, symmetric_aware=True)
