@@ -45,7 +45,7 @@ class Agent:
             [array]: normalized game state
         """
         normalized_game_state = game_state[:]
-        for element, i in enumerate(game_state):
+        for i, element in enumerate(game_state):
             if element == self.player_n:
                 normalized_game_state[i] = 1
             elif element != 0:
