@@ -1,1 +1,4 @@
+# Pyenv
 *.python-version
+# Pickle files
+*.p
