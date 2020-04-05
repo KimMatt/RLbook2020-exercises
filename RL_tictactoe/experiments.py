@@ -2,12 +2,15 @@ import pickle
 import multiprocessing
 import os
 import pandas as pd
+import numpy as np
 from collections import defaultdict
+import time
 
 from src.logger import Logger
 from src.tictactoe import TicTacToe
-from src.agent import Agent
+from src.agent import Agent, ExpertPlayer
 from src.experiment import train, test
+
 
 # Train Parallel
 def train_parallel(agents):
@@ -16,7 +19,7 @@ def train_parallel(agents):
     a2 = agents[1]
 
     # Train
-    train(10000, a1, a2, random=True)
+    train(50000000, a1, a2, random=True)
     a1.set_exploration(0)
     return a1
 
@@ -28,7 +31,7 @@ def test_parallel(agents):
     a2 = agents[1]
 
     # Test
-    test(10000, a1, a2)
+    test(100000, a1, a2)
 
 
 # Get the policymap average
@@ -43,7 +46,7 @@ def dictionary_means(dict_list):
 
 
 # TESTING PARALLEL AGAINST DUMB AGENTS
-def ensemble_dummy_means():
+def train_meta_agent(against_dummy = True):
     # use half threads as processes
     threads = int(os.cpu_count() / 2)
 
@@ -52,7 +55,8 @@ def ensemble_dummy_means():
     agent_list_train = []
     for i in range(threads):
         iter_list = (Agent(1, 0.8),
-                     Agent(2, 0.8, dummy=True)
+                     Agent(2, 0.8, dummy=True) if against_dummy==True 
+                        else ExpertPlayer(2)
                     )
         agent_list_train.append(iter_list)
 
@@ -75,7 +79,7 @@ def ensemble_dummy_means():
 
 
     # List of (trained + meta agents, test_agent)
-    test_agent = Agent(2, 0.8, dummy=False)
+    test_agent = Agent(2, 0.8, dummy=False) if against_dummy==True else ExpertPlayer(2)
     agent_list_test = [(train_agent, test_agent) for train_agent in trained_agents_list[0]]
     agent_list_test.append((meta_agent, test_agent))
 
@@ -83,7 +87,21 @@ def ensemble_dummy_means():
     # Test all of the agents 
     p = multiprocessing.Pool(len(agent_list_test))
     p.map(test_parallel, agent_list_test)
+
+    return meta_agent
  
-# MAIN ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~``
+
+
+
+
+
+
+
+# MAIN ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if __name__ == "__main__":
-    pass
+
+
+    meta_agent = train_meta_agent()
+    pickle.dump(meta_agent.policy, open('policies/meta_agent.p', 'wb'))
+
+    test(100000, meta_agent, ExpertPlayer(2))
