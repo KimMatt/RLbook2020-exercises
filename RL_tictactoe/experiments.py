@@ -167,7 +167,7 @@ def build_meta_agent():
 if __name__ == "__main__":
 
     agent = Agent(1, 0.5)
-    agent_sym = Agent(1, 0.5, symmetric_aware=True)
+    agent_sym = Agent(1, 0.5)
 
     agent_list = [1000, agent, agent_sym]
 
@@ -175,3 +175,5 @@ if __name__ == "__main__":
     test_parallel(agent_list)
 
     assert agent.get_policy() == agent_sym.get_policy()
+
+    
