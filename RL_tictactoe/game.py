@@ -1,6 +1,7 @@
 # game.py
 # Launches an interface to play against a tic tac toe agent
 
+import os
 import time
 import pygame
 import pickle
@@ -14,12 +15,13 @@ from src.agent import Agent
 
 def load_agent(filename):
     agent_policy = pickle.load(open("policies/" + filename + ".p", "rb"))
-    agent = Agent(2, 0.0)
+    agent = Agent(2, 0.0, True)
     agent.set_policy(agent_policy)
     return agent
 
 
 if __name__ == "__main__":
+    os.environ['SDL_VIDEO_CENTERED'] = '1'
     pygame.font.init() 
     comic_sans = pygame.font.SysFont('Comic Sans MS', 30)
     pygame.init()
@@ -35,6 +37,8 @@ if __name__ == "__main__":
     LINE_WIDTH = 3
     MOVE_WIDTH = 9
     WHITE = (255,255,255)
+    RED = (255,0,0)
+    GREEN = (0,255,0)
 
     logger = Logger()
 
@@ -51,6 +55,13 @@ if __name__ == "__main__":
         screen.blit(win_surface, (PADDING, WINDOW_WIDTH + (PADDING*2)))
         screen.blit(loss_surface, (PADDING, WINDOW_WIDTH + (PADDING*3)))
         screen.blit(tie_surface, (PADDING, WINDOW_WIDTH + (PADDING*4)))
+
+    def draw_colored_window(screen, color):
+        pygame.draw.line(screen, color, (PADDING, PADDING + BOX_WIDTH), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH), LINE_WIDTH + 1)
+        pygame.draw.line(screen, color, (PADDING, PADDING + BOX_WIDTH*2), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH*2), LINE_WIDTH + 1)
+        pygame.draw.line(screen, color, (PADDING + BOX_WIDTH, PADDING), (PADDING + BOX_WIDTH, PADDING + BOX_WIDTH *3), LINE_WIDTH + 1)
+        pygame.draw.line(screen, color, (PADDING + BOX_WIDTH*2, PADDING), (PADDING + BOX_WIDTH*2, PADDING + BOX_WIDTH *3), LINE_WIDTH + 1)
+
 
     def get_pos(move):
         row = int(move/3)
@@ -118,8 +129,10 @@ if __name__ == "__main__":
                         time.sleep(0.5)
                         game_model = TicTacToe(logger)
                         if game_model.winner == 2:
+                            #draw_colored_window(screen, RED)
                             agent.back_propagate_policies(0.2, 1.0)
                         elif game_model.winner == 1:
+                            #draw_colored_window(screen, GREEN)
                             agent.back_propagate_policies(0.2, 0.0)
                         else:
                             agent.back_propagate_policies(0.2, 0.5)
