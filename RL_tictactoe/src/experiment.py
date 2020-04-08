@@ -64,8 +64,7 @@ def run_games(iterations, a1, a2, logger, **kwargs):
 
 def train(iterations, a1, a2, random=False):
 
-    if random:
-        np.random.seed()
+    np.random.seed()
 
     # Hyperparameters
     alpha = 0.2
@@ -91,11 +90,17 @@ def train(iterations, a1, a2, random=False):
 def test(iterations, a1, a2):
     logger = Logger()
     run_games(iterations, a1, a2, logger)
+
+    # 
+    wins = logger.agent_1_wins / iterations
+    losses = logger.agent_2_wins / iterations
+    ties = logger.ties / iterations
+
     if a2.dummy:
         print("TEST VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
-            (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),
-            (logger.ties / iterations)))
+            (wins), (losses), (ties)))
     else:
         print("TEST VS. LEARNING AGENT: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
-            (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),
-            (logger.ties / iterations)))
+            (wins), (losses), (ties)))
+
+    return {'wins': wins, 'losses':losses, 'ties':ties}
