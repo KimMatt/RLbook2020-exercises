@@ -1,6 +1,7 @@
 # game.py
 # Launches an interface to play against a tic tac toe agent
 
+import time
 import pygame
 import pickle
 from pygame.locals import ( 
@@ -19,6 +20,8 @@ def load_agent(filename):
 
 
 if __name__ == "__main__":
+    pygame.font.init() 
+    comic_sans = pygame.font.SysFont('Comic Sans MS', 30)
     pygame.init()
 
     display_info = pygame.display.Info()
@@ -33,13 +36,21 @@ if __name__ == "__main__":
     MOVE_WIDTH = 9
     WHITE = (255,255,255)
 
+    logger = Logger()
+
+
     def draw_clear_window(screen):
         screen.fill((0,0,0)) # fill screen with black        
         pygame.draw.line(screen, WHITE, (PADDING, PADDING + BOX_WIDTH), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING, PADDING + BOX_WIDTH*2), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH*2), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING + BOX_WIDTH, PADDING), (PADDING + BOX_WIDTH, PADDING + BOX_WIDTH *3), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING + BOX_WIDTH*2, PADDING), (PADDING + BOX_WIDTH*2, PADDING + BOX_WIDTH *3), LINE_WIDTH)
-
+        win_surface = comic_sans.render('Wins: {}'.format(logger.agent_1_wins), False, WHITE)
+        loss_surface = comic_sans.render('Loss: {}'.format(logger.agent_2_wins), False, WHITE)
+        tie_surface = comic_sans.render('Ties: {}'.format(logger.ties), False, WHITE)
+        screen.blit(win_surface, (PADDING, WINDOW_WIDTH + (PADDING*2)))
+        screen.blit(loss_surface, (PADDING, WINDOW_WIDTH + (PADDING*3)))
+        screen.blit(tie_surface, (PADDING, WINDOW_WIDTH + (PADDING*4)))
 
     def get_pos(move):
         row = int(move/3)
@@ -80,7 +91,6 @@ if __name__ == "__main__":
     draw_clear_window(screen)
 
     agent = load_agent("meta_agent")
-    logger = Logger()
     #TODO: Make logger optional
     game_model = TicTacToe(logger)
     agent.enter(game_model)
@@ -93,7 +103,7 @@ if __name__ == "__main__":
             if event.type == MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
                 box = get_box(pos)
-                if box is not None and game_model.in_progress:
+                if box is not None and game_model.in_progress and box in game_model.possible_moves:
                     game_model.play_move(1,box)
                     print("Player made move {}",format(box))
                     draw_move(pos, 1)
@@ -103,6 +113,19 @@ if __name__ == "__main__":
                         print("Agent made move {}",format(last_move))
                         print(game_model.game_state)
                         draw_move(get_pos(last_move), 2)
+                    if not game_model.in_progress:
+                        pygame.display.flip()
+                        time.sleep(0.5)
+                        game_model = TicTacToe(logger)
+                        if game_model.winner == 2:
+                            agent.back_propagate_policies(0.2, 1.0)
+                        elif game_model.winner == 1:
+                            agent.back_propagate_policies(0.2, 0.0)
+                        else:
+                            agent.back_propagate_policies(0.2, 0.5)
+                        agent.enter(game_model)
+                        draw_clear_window(screen)
+            pygame.event.clear()
+                        
 
         pygame.display.flip() # flip everything to the display
-
