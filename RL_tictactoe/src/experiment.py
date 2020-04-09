@@ -62,7 +62,7 @@ def run_games(iterations, a1, a2, logger, **kwargs):
         games_left -= 1
 
 
-def train(iterations, a1, a2, random=False):
+def train(iterations, a1, a2, random=False, return_both=False):
 
     np.random.seed()
 
@@ -73,6 +73,8 @@ def train(iterations, a1, a2, random=False):
     logger = Logger()
     run_games(iterations, a1, a2, logger, training=True,
               alpha=alpha, decrease_factor=decrease_factor, decrease_rate=decrease_rate)
+    if return_both:
+        return [a1, a2]
     if a2.dummy:
         print("TRAIN VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
             (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),

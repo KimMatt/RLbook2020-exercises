@@ -76,7 +76,7 @@ def train_parallel(num_iter, agent_list, against_dummy = True):
     return trained_agents_list
 
 # Test Agents in a list
-def test_parallel(num_iter, agent_list, against_dummy=True):
+def test_parallel(num_iter, agent_list, against_dummy=True, agent=None):
     # # List of (trained + meta agents, test_agent)
     # test_agent = Agent(2, 0.8, dummy=False) if against_dummy==True else ExpertPlayer(2)
     # agent_list_test = [(train_agent, test_agent) for train_agent in trained_agents_list[0]]
@@ -85,7 +85,11 @@ def test_parallel(num_iter, agent_list, against_dummy=True):
     # threads
     threads = len(agent_list)
 
-    iter_agent_list = [(num_iter, a, Agent(2, 0.8, dummy=True)) for a in agent_list]
+    if against_dummy:
+        iter_agent_list = [(num_iter, a, Agent(2, 0.8, dummy=True)) for a in agent_list]
+    else:
+        iter_agent_list = [(num_iter, a, agent) for a in agent_list]
+
 
     # Test all of the agents 
     p = multiprocessing.Pool(threads)
@@ -164,7 +168,7 @@ def build_meta_agent():
 
 
 # Train aware and not aware agents, save to csv
-def symmetric_comparison_dataframe():
+def compare_symmetric_learning_rate(iterations):
        # agents to compare
     agent = Agent(1, 0.5)
     agent_sym = Agent(1, 0.5, symmetric_aware=True)
@@ -187,7 +191,7 @@ def symmetric_comparison_dataframe():
     not_aware_loss = [scores[0]['losses']]
     not_aware_tie = [scores[0]['ties']]
 
-    for i in range(100):
+    for i in range(iterations-1):
         print(i, '-----------------------')
         # get score
         trained_list[0].set_exploration(0)
@@ -215,7 +219,62 @@ def symmetric_comparison_dataframe():
                        'not_aware_win': not_aware_win,
                        'not_aware_loss': not_aware_loss,
                        'not_aware_tie': not_aware_tie})
-    df.to_csv('output/scores.csv', index=False)
+    df.to_csv('output/symmetric_comparison_scores.csv', index=False)
+
+
+def compare_dummy_learning_rate():
+        # setup
+    scores1, scores2 = [], []
+    
+    # agent to train
+    agent1 = Agent(1, 0.5)
+    agent_not_dummy = Agent(2, 0.5)
+    agent2 = Agent(1, 0.5)
+    agent_dummy = Agent(2, 0.5, dummy=True)
+
+    # track scores
+    dummy_win, dummy_loss, dummy_tie = [], [], [] 
+    not_dummy_win, not_dummy_loss, not_dummy_tie = [], [], []
+
+    for i in range(100):
+        print(i, '-------')
+        # train
+        agent_list = train(1000, agent1, agent_not_dummy, return_both=True)
+        agent1 = agent_list[0]
+        agent_not_dummy = agent_list[1]
+        agent2 = train(1000, agent2, agent_dummy)
+
+        # test
+        agent1.set_exploration(0)
+        agent2.set_exploration(0)
+
+        scores = test_parallel(10000, [agent1, agent2])
+       
+        agent1.set_exploration(0.5)
+        agent2.set_exploration(0.5)
+
+        # append scores
+        not_dummy_win.append(scores[0]['wins'])
+        not_dummy_loss.append(scores[0]['losses'])
+        not_dummy_tie.append(scores[0]['ties'])
+
+        dummy_win.append(scores[1]['wins'])
+        dummy_loss.append(scores[1]['losses'])
+        dummy_tie.append(scores[1]['ties'])
+
+        print(' ')
+
+
+
+    # output dataframe
+    df = pd.DataFrame({'dummy_win': dummy_win, 
+                       'dummy_loss': dummy_loss,
+                       'dummy_tie': dummy_tie,
+                       'not_dummy_win': not_dummy_win,
+                       'not_dummy_loss': not_dummy_loss,
+                       'not_dummy_tie': not_dummy_tie})
+    df.to_csv('output/dummy_comparison_scores.csv', index=False)
+
 
 # PLOT
 def plot_symmetric_learning_rate(file_name):
@@ -243,4 +302,81 @@ def plot_symmetric_learning_rate(file_name):
  
 # # MAIN ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if __name__ == "__main__":
-    plot_symmetric_learning_rate('output/Symmetric_Learning_Rate.png')
+    def dummy_comparison_scores():
+
+        # setup
+        scores1, scores2 = [], []
+        
+        # agent to train
+        agent1 = Agent(1, 0.5)
+        agent_not_dummy = Agent(2, 0.5)
+        agent2 = Agent(1, 0.5)
+        agent_dummy = Agent(2, 0.5, dummy=True)
+        
+        # meta agent policy
+        meta_policy = pickle.load(open('policies/meta_agent.p', 'rb'))
+
+        # track scores
+        dummy_win, dummy_loss, dummy_tie = [], [], [] 
+        not_dummy_win, not_dummy_loss, not_dummy_tie = [], [], []
+
+        for i in range(100):
+            print(i, '-------')
+            # train
+            agent_list = train(1000, agent1, agent_not_dummy, return_both=True)
+            agent1 = agent_list[0]
+            agent_not_dummy = agent_list[1]
+            agent2 = train(1000, agent2, agent_dummy)
+
+            # test
+            agent1.set_exploration(0)
+            agent2.set_exploration(0)
+
+            meta_agent = Agent(2, 0, dummy=True)
+            meta_agent.set_policy(meta_policy)
+            scores = test_parallel(10000, [agent1, agent2], against_dummy=False, agent=meta_agent)
+        
+            agent1.set_exploration(0.5)
+            agent2.set_exploration(0.5)
+
+            # append scores
+            not_dummy_win.append(scores[0]['wins'])
+            not_dummy_loss.append(scores[0]['losses'])
+            not_dummy_tie.append(scores[0]['ties'])
+
+            dummy_win.append(scores[1]['wins'])
+            dummy_loss.append(scores[1]['losses'])
+            dummy_tie.append(scores[1]['ties'])
+
+            print(' ')
+
+
+
+        # output dataframe
+        df = pd.DataFrame({'dummy_win': dummy_win, 
+                        'dummy_loss': dummy_loss,
+                        'dummy_tie': dummy_tie,
+                        'not_dummy_win': not_dummy_win,
+                        'not_dummy_loss': not_dummy_loss,
+                        'not_dummy_tie': not_dummy_tie})
+        df.to_csv('output/dummy_comparison_scores.csv', index=False)
+
+        df = pd.read_csv('output/scores.csv')
+    
+    df = pd.read_csv('output/dummy_comparison_scores.csv')
+    num = 0
+    for col in ['dummy_win', 'not_dummy_win', 'dummy_loss', 'not_dummy_loss']:
+        num+=1
+        plt.plot(df.index, df[col], 
+                    alpha=0.9,
+                    label=col,
+                    linewidth=2)
+    
+    plt.legend(loc=0, fontsize=10)
+
+    plt.title('Dummy Learning Rate vs Meta Agent', fontsize=14)
+    plt.xlabel('Training Iterations (000s)', fontsize=11)
+    plt.ylabel('%', fontsize=11)
+    plt.savefig('output/dummy_comparison_scores.png')
+
+    plt.show()
