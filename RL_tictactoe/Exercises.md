@@ -51,13 +51,7 @@ This could improve our RL method by allowing agents to learn faster. An agent wo
 
 If the opponent does not take advantage of the symmetries, they would learn at a slower rate. Also, if a symmetrical-aware agent learns how to defeat the opponent with one strategy, it can easily defeat it in the same way, but with a symmetrical version. Thus, we should treat the symmetrical states equivalently.
 
-```
-TRAIN VS. LEARNING AGENT: agent 1 wins: 0.28762, agent 2 wins: 0.29042, ties: 0.42196
-VS. DUMMY: agent 1 wins: 0.7108, agent 2 wins: 0.2758, ties: 0.0134
-Now with symmetric awareness
-TRAIN VS. LEARNING AGENT: agent 1 wins: 0.28752, agent 2 wins: 0.27084, ties: 0.44164
-VS. DUMMY: agent 1 wins: 0.7794, agent 2 wins: 0.2156, ties: 0.005
-```
+![](output/symmetric_comparison_scores.png)
 
 The symmetrically aware agent performed ~5% better than the non symmetrically aware agent.
 
@@ -81,12 +75,12 @@ The first trial was with a fully greedy agent while the second trial was with a 
 
 Both agents played fully greedy when versing the dummy.
 
-###Exercise 1.4: Learning from Exploration 
+###Exercise 1.4: Learning from Exploration
 Suppose learning updates occurred after all moves, including exploratory moves. If the step-size parameter is appropriately reduced over time, then the state values would converge to a set of probabilities. What are the two sets of probabilities computed when we do, and when we do not, learn from exploratory moves? Assuming that we do continue to make exploratory moves, which set of probabilities might be better to learn? Which would result in more wins?
 
 I'm not sure if this is asking if the learning updates occur after all moves of a game or after each move? Is the expected a
 
-###Exercise 1.5: Other Improvements 
+###Exercise 1.5: Other Improvements
 Can you think of other ways to improve the reinforcement learning player? Can you think of any better way to solve the tic-tac-toe problem as posed?
 
 Currently, ties are treated the same as losses. However, a tie would be considered more of a win than a complete loss. And a good tic tac toe player should be able to tie more often than lose. Treating the tie in a way such that it is slightly better than a loss could improve the reinforcement learning player.
