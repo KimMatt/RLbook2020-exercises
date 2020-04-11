@@ -1,86 +1,57 @@
 # Chapter 1: The Reinforcement Learning Problem
 
-## Update rule for a temporal difference model
-
-`V(s) = V(s) + a * (V(s') - V(s))`
-
-Where `V(s)` = estimated value of state
-
-`s` = state
-
-`s'` = next state
-
-`a` = step size parameter AKA rate of learning
-
-The step size parameter is generally reduced over time.
-
-This is considered a temporal difference model update rule because its updates are based on the estimates of a state from two different times.
-
-## Extended Tic Tac Toe Temporal Difference Example
-
-A simplified Tic Tac Toe where ties are also considered losses. Implementation using the above update rule in `tictactoe.py`
-
 ## Exercises
-
 
 ### Exercise 1.1: Self-Play
 Suppose, instead of playing against a random opponent, the reinforcement learning algorithm described above played against itself. What do you think would happen in this case? Would it learn a different way of playing?
 
-I would expect the self play agent to perform better. I would expect it to learn a more intelligent way of playing and for it to learn faster. It would learn faster because it shares a policy map with its opponent. Thus, both agents would learn from each other's mistakes and wins.
+Yes, we think the agent would learn a different way of playing. We expect the self play agent to learn faster and for it to learn a more intelligent way of playing because it shares a policy map with its opponent, allowing it to learn from each other's mistakes and wins.
 
-```
-TRAIN VS. DUMMY: agent 1 wins: 0.73694, agent 2 wins: 0.22716, ties: 0.0359
-VS. DUMMY: agent 1 wins: 0.5602, agent 2 wins: 0.3292, ties: 0.1106
-TRAIN VS. LEARNING AGENT: agent 1 wins: 0.28776, agent 2 wins: 0.28792, ties: 0.42432
-VS. DUMMY: agent 1 wins: 0.7424, agent 2 wins: 0.2464, ties: 0.0112
-Now with self play
-TRAIN VS. LEARNING AGENT: agent 1 wins: 0.28552, agent 2 wins: 0.27866, ties: 0.43582
-VS. DUMMY: agent 1 wins: 0.793, agent 2 wins: 0.172, ties: 0.035
-```
+![](./output/plots/selfplay_vs_random_training.png)
 
-Both agents played fully greedy when vs. the dummy agent. The agent that trained with self play performed almost 5% better than the agent that trained against an seperate learning agent and more than 20% better than the agent which trained against a random opponent.
+Here we compare the losses of agents that have trained vs. themselves (self play) and agents that have trained vs. a completely random agent. We test both types of agents at each step after 1000 training games against the current self-play agent, a completely random agent, and our meta agent which has been trained against both other agents and random agents to achieve a 90% win rate against random agents.
 
-Perhaps this is closer to reality. Consider when a human player sees another player win, they may try to copy that winning strategy the next time they play.
+The self-play agent lost the least against itself and the random-trained agent performs best against random agents. This makes sense because these are what they have learned to play against. So this proves that they have learned different ways of playing.
+
+It is difficult for us to say which agent has performed better because we are testing against a meta agent that has been trained primarily against a random agent. Also, we trained both with an exploration rate of 0.5. We think the self play agent may actually perform better with a lower exploration rate, because it would keep challenging its own learned optimizations against itself.
 
 ### Exercise 1.2: Symmetries
-Many tic-tac-toe positions appear different but are really the same because of symmetries. How might we amend the reinforcement learning algorithm described above to take advantage of this? In what ways would this improve it? Now think again. Suppose the opponent did not take advantage of symmetries. In that case, should we? Is it true, then, that symmetrically equivalent positions should necessarily have the same value?
+Many tic-tac-toe states are really the same because of symmetries. How might we amend the reinforcement learning algorithm described above to take advantage of this? In what ways would this improve it? Now think again. Suppose the opponent did not take advantage of symmetries. In that case, should we? Is it true, then, that symmetrically equivalent positions should necessarily have the same value?
 
-The policies should map all symmetrical states to the same estimated value when updating them.
+When the agent updates a state's value in a policy, it should also update the state's symmetric states as well. There are two types of symmetries: rotational and mirrored, adding up to a total of 7 symmetric states per state.
 
 This could improve our RL method by allowing agents to learn faster. An agent would not have to relearn the same estimates for two states that would otherwise be the same.
 
 If the opponent does not take advantage of the symmetries, they would learn at a slower rate. Also, if a symmetrical-aware agent learns how to defeat the opponent with one strategy, it can easily defeat it in the same way, but with a symmetrical version. Thus, we should treat the symmetrical states equivalently.
 
-![](output/symmetric_comparison_scores.png)
+![](./output/plots/symmetric_comparison_scores.png)
 
-The symmetrically aware agent performed ~5% better than the non symmetrically aware agent.
-
+Here we compare the performance of a symmetrically aware agent vs. a non symmetrically aware agent. Both have been trained against an agent that plays randomly, and tested against a random agent as well. The symmetrically aware agent wins at a greater rate much faster than the non symmetrically aware agent, and continues to have a higher win rate overall. However, theortically they should both converge to the same policies eventually. We can see this starting to happen near the end of the experiment.
 
 ### Exercise 1.3: Greedy Play
-Suppose the reinforcement learning player was
-greedy, that is, it always played the move that brought it to the position that
-it rated the best. Would it learn to play better, or worse, than a nongreedy
-player? What problems might occur?
+Suppose the reinforcement learning player was greedy, that is, it always played the move that brought it to the position that
+it rated the best. Would it learn to play better, or worse, than a nongreedy player? What problems might occur?
 
-It would learn to play worse than a non greedy player, especially at the beginning of the learning phase. It's beneficial to have a high exploration vs. exploitation value when initially learning, because the agent really knows nothing at the beginning... Once an exploitive agent learns a few ways to win, it will stick to those potentially suboptimal moves and not explore to learn the actual optimal moves.
+It may learn to play worse than a non greedy player, especially at the beginning of training. It's beneficial to have a high exploration vs. exploitation value when initially learning, because the agent needs to fill up its policy map's different states... Once an exploitive agent learns a few ways to win, it may stick to those potentially suboptimal moves and not explore to learn more optimal moves.
 
-```
-TRAIN VS DUMMY: agent 1 wins: 0.73524, agent 2 wins: 0.22646, ties: 0.0383
-VS. DUMMY: agent 1 wins: 0.5544, agent 2 wins: 0.335, ties: 0.1106
-TRAIN VS DUMMY: agent 1 wins: 0.1462, agent 2 wins: 0.28714, ties: 0.56666
-VS. DUMMY: agent 1 wins: 0.725, agent 2 wins: 0.2248, ties: 0.0502
-```
+![](./output/plots/exploration_vs_winrate.png)
 
-The first trial was with a fully greedy agent while the second trial was with a fully explorative agent. The results align with my hypothesis so I'm going to stick to my guns and believe my logic is sound :)
+Here we compare agents which play with different exploration values. Each which converge because their alpha values reduce to 0 before the end of the experiment. The greedy agent, while at first performed quite well, converged to the second lowest of win rates. This agent learns very slowly. Theoretically if it did not converge it could be able to eventually perform as well as the others agents if it were to vs. another learning agent because its sub optimal moves would eventually decrease their values when they lead to losses against a more 'intelligent' agent.
 
-Both agents played fully greedy when versing the dummy.
-
-###Exercise 1.4: Learning from Exploration
+### Exercise 1.4: Learning from Exploration
 Suppose learning updates occurred after all moves, including exploratory moves. If the step-size parameter is appropriately reduced over time, then the state values would converge to a set of probabilities. What are the two sets of probabilities computed when we do, and when we do not, learn from exploratory moves? Assuming that we do continue to make exploratory moves, which set of probabilities might be better to learn? Which would result in more wins?
 
-I'm not sure if this is asking if the learning updates occur after all moves of a game or after each move? Is the expected a
+![](./output/plots/exploration_vs_winrate.png)
 
-###Exercise 1.5: Other Improvements
+Here the greedy agent converges to a sub optimal set of probabilities when compared to most of the non greedy agents. It looks like the most optimal policy map lies somewhere between an agent with an exploration rate between 0.4 and 0.6. The agent with an exploration rate of 1, however learned the worst set of probabilities.
+
+These have all been tested against a random agent with exploration = 0.0 . The set of probabilities from a balanced explorative agent leads to more wins than a fully greedy agent.
+
+### Exercise 1.5: Other Improvements
 Can you think of other ways to improve the reinforcement learning player? Can you think of any better way to solve the tic-tac-toe problem as posed?
 
-Currently, ties are treated the same as losses. However, a tie would be considered more of a win than a complete loss. And a good tic tac toe player should be able to tie more often than lose. Treating the tie in a way such that it is slightly better than a loss could improve the reinforcement learning player.
+One method we tried out was training multiple agents in parallel, and then combining their policies by taking the means of their probabilities. This combined agent, when tested, had on average about 5% more wins than the individual agents.
+
+Another way to improve the agent is to tune the hyperparameters: exploration, alpha, and the rate of decrease.
+
+Other ways to perhaps solve the tic tac toe problem may be to train some kind of attention mechanism to focus on certain parts of the state, and to share those focused parts of the state with other probabilities. Some games may have "noise" in state, pieces played that are not important to winning or losing anymore, that prevent two game states from being identical.
