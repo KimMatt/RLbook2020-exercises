@@ -64,6 +64,11 @@ class Agent:
         self.policy = policy
 
 
+    def get_last_move(self):
+        if self.game_logs:
+            return self.game_logs[-1][1]
+
+
     def update_policy(self, game_state, value):
         # Normalize the game state
         game_state = self.normalized_game_state(game_state)
