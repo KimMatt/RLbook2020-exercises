@@ -7,7 +7,7 @@ Suppose, instead of playing against a random opponent, the reinforcement learnin
 
 Yes, we think the agent would learn a different way of playing. We expect the self play agent to learn faster and for it to learn a more intelligent way of playing because it shares a policy map with its opponent, allowing it to learn from each other's mistakes and wins.
 
-![](./output/plots/selfplay_vs_random_training.png)
+![](./output/plots/self_vs_random_loserate.png)
 
 Here we compare the losses of agents that have trained vs. themselves (self play) and agents that have trained vs. a completely random agent. We test both types of agents at each step after 1000 training games against the current self-play agent, a completely random agent, and our meta agent which has been trained against both other agents and random agents to achieve a 90% win rate against random agents.
 
@@ -24,7 +24,7 @@ This could improve our RL method by allowing agents to learn faster. An agent wo
 
 If the opponent does not take advantage of the symmetries, they would learn at a slower rate. Also, if a symmetrical-aware agent learns how to defeat the opponent with one strategy, it can easily defeat it in the same way, but with a symmetrical version. Thus, we should treat the symmetrical states equivalently.
 
-![](./output/plots/symmetric_comparison_scores.png)
+![](./output/plots/symmetricaware_vs_notaware.png)
 
 Here we compare the performance of a symmetrically aware agent vs. a non symmetrically aware agent. Both have been trained against an agent that plays randomly, and tested against a random agent as well. The symmetrically aware agent wins at a greater rate much faster than the non symmetrically aware agent, and continues to have a higher win rate overall. However, theortically they should both converge to the same policies eventually. We can see this starting to happen near the end of the experiment.
 
