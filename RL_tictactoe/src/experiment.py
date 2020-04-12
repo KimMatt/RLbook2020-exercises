@@ -93,7 +93,6 @@ def test(iterations, a1, a2):
     logger = Logger()
     run_games(iterations, a1, a2, logger)
 
-    # 
     wins = logger.agent_1_wins / iterations
     losses = logger.agent_2_wins / iterations
     ties = logger.ties / iterations

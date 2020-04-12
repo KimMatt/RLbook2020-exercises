@@ -43,8 +43,7 @@ if __name__ == "__main__":
     logger = Logger()
 
 
-    def draw_clear_window(screen):
-        screen.fill((0,0,0)) # fill screen with black
+    def draw_window(screen):
         pygame.draw.line(screen, WHITE, (PADDING, PADDING + BOX_WIDTH), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING, PADDING + BOX_WIDTH*2), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH*2), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING + BOX_WIDTH, PADDING), (PADDING + BOX_WIDTH, PADDING + BOX_WIDTH *3), LINE_WIDTH)
@@ -82,29 +81,51 @@ if __name__ == "__main__":
             return (column * row) + ((row-1) * (3-column)) - 1
 
 
-    def draw_move(pos, player_n):
+    def draw_move(pos, object_n, color=None):
         pos_x = pos[0] - ((pos[0] - PADDING)%BOX_WIDTH)
         pos_y = pos[1] - ((pos[1] - PADDING)%BOX_WIDTH)
         box_padding = int(BOX_WIDTH * 0.1)
-        if player_n == 1:
+        if object_n == 1:
             pygame.draw.line(screen, WHITE, (pos_x+box_padding, pos_y+box_padding),
                              (pos_x + BOX_WIDTH - box_padding, pos_y + BOX_WIDTH - box_padding),
                              MOVE_WIDTH)
             pygame.draw.line(screen, WHITE, (pos_x + BOX_WIDTH - box_padding, pos_y+box_padding),
                              (pos_x + box_padding, pos_y + BOX_WIDTH - box_padding),
                              MOVE_WIDTH)
-        else:
+        elif object_n == 2:
             pygame.draw.circle(screen, WHITE, (pos_x + int(BOX_WIDTH/2),pos_y + int(BOX_WIDTH/2)),
                                int(BOX_WIDTH/2) - box_padding, MOVE_WIDTH)
+        elif color:
+            pygame.draw.rect(screen, color, pygame.Rect((pos_x,pos_y), (BOX_WIDTH, BOX_WIDTH)))
+
+
+    def draw_moves(game):
+        for i in range(len(game.game_state)):
+            if game.game_state[i]:
+                draw_move(get_pos(i), game.game_state[i])
+
+
+    def get_color(value):
+        return (int((1.0-value) * 255.0), int(value * 255.0), 0)
+
+
+    def color_boxes(agent):
+        possible_move_infos = agent.get_possible_move_infos()
+        for info in possible_move_infos:
+            color = get_color(info[0])
+            pos = get_pos(info[1])
+            draw_move(pos, 3, color)
 
 
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    draw_clear_window(screen)
+    screen.fill((0, 0, 0))
+    draw_window(screen)
 
     agent = load_agent("meta_agent")
     #TODO: Make logger optional
     game_model = TicTacToe(logger)
     agent.enter(game_model)
+    alpha = 0.2
 
     running = True
     while running:
@@ -116,26 +137,34 @@ if __name__ == "__main__":
                 box = get_box(pos)
                 if box is not None and game_model.in_progress and box in game_model.possible_moves:
                     game_model.play_move(1,box)
-                    print("Player made move {}",format(box))
+                    print("Player made move {}", format(box))
                     draw_move(pos, 1)
                     if game_model.in_progress:
+                        color_boxes(agent)
+                        draw_window(screen)
+                        pygame.display.flip()
+                        time.sleep(0.5)
                         agent.play()
                         last_move = agent.get_last_move()
-                        print("Agent made move {}",format(last_move))
+                        print("Agent made move {}", format(last_move))
                         print(game_model.game_state)
-                        draw_move(get_pos(last_move), 2)
+                        screen.fill((0, 0, 0))  # fill screen with black
+                        draw_window(screen)
+                        draw_moves(game_model)
+                        pygame.display.flip()
                     if not game_model.in_progress:
                         pygame.display.flip()
                         time.sleep(0.5)
                         game_model = TicTacToe(logger)
                         if game_model.winner == 2:
-                            agent.back_propagate_policies(0.2, 1.0)
+                            agent.back_propagate_policies(alpha, 1.0)
                         elif game_model.winner == 1:
-                            agent.back_propagate_policies(0.2, 0.0)
+                            agent.back_propagate_policies(alpha, 0.0)
                         else:
-                            agent.back_propagate_policies(0.2, 0.5)
+                            agent.back_propagate_policies(alpha, 0.5)
                         agent.enter(game_model)
-                        draw_clear_window(screen)
+                        screen.fill((0, 0, 0))  # fill screen with black
+                        draw_window(screen)
             pygame.event.clear()
 
         pygame.display.flip() # flip everything to the display
