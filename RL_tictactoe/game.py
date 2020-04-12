@@ -5,7 +5,7 @@ import os
 import time
 import pygame
 import pickle
-from pygame.locals import ( 
+from pygame.locals import (
     QUIT,
     MOUSEBUTTONUP
 )
@@ -22,7 +22,7 @@ def load_agent(filename):
 
 if __name__ == "__main__":
     os.environ['SDL_VIDEO_CENTERED'] = '1'
-    pygame.font.init() 
+    pygame.font.init()
     comic_sans = pygame.font.SysFont('Comic Sans MS', 30)
     pygame.init()
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
 
     def draw_clear_window(screen):
-        screen.fill((0,0,0)) # fill screen with black        
+        screen.fill((0,0,0)) # fill screen with black
         pygame.draw.line(screen, WHITE, (PADDING, PADDING + BOX_WIDTH), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING, PADDING + BOX_WIDTH*2), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH*2), LINE_WIDTH)
         pygame.draw.line(screen, WHITE, (PADDING + BOX_WIDTH, PADDING), (PADDING + BOX_WIDTH, PADDING + BOX_WIDTH *3), LINE_WIDTH)
@@ -87,14 +87,14 @@ if __name__ == "__main__":
         pos_y = pos[1] - ((pos[1] - PADDING)%BOX_WIDTH)
         box_padding = int(BOX_WIDTH * 0.1)
         if player_n == 1:
-            pygame.draw.line(screen, WHITE, (pos_x+box_padding, pos_y+box_padding), 
+            pygame.draw.line(screen, WHITE, (pos_x+box_padding, pos_y+box_padding),
                              (pos_x + BOX_WIDTH - box_padding, pos_y + BOX_WIDTH - box_padding),
                              MOVE_WIDTH)
-            pygame.draw.line(screen, WHITE, (pos_x + BOX_WIDTH - box_padding, pos_y+box_padding), 
+            pygame.draw.line(screen, WHITE, (pos_x + BOX_WIDTH - box_padding, pos_y+box_padding),
                              (pos_x + box_padding, pos_y + BOX_WIDTH - box_padding),
                              MOVE_WIDTH)
         else:
-            pygame.draw.circle(screen, WHITE, (pos_x + int(BOX_WIDTH/2),pos_y + int(BOX_WIDTH/2)), 
+            pygame.draw.circle(screen, WHITE, (pos_x + int(BOX_WIDTH/2),pos_y + int(BOX_WIDTH/2)),
                                int(BOX_WIDTH/2) - box_padding, MOVE_WIDTH)
 
 
@@ -129,16 +129,13 @@ if __name__ == "__main__":
                         time.sleep(0.5)
                         game_model = TicTacToe(logger)
                         if game_model.winner == 2:
-                            #draw_colored_window(screen, RED)
                             agent.back_propagate_policies(0.2, 1.0)
                         elif game_model.winner == 1:
-                            #draw_colored_window(screen, GREEN)
                             agent.back_propagate_policies(0.2, 0.0)
                         else:
                             agent.back_propagate_policies(0.2, 0.5)
                         agent.enter(game_model)
                         draw_clear_window(screen)
             pygame.event.clear()
-                        
 
         pygame.display.flip() # flip everything to the display
