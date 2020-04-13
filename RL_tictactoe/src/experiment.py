@@ -90,17 +90,16 @@ def train(iterations, a1, a2, random=False, return_both=False):
             (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),
             (logger.ties / iterations)))
     # returns the better agent
-    if logger.agent_1_wins > logger.agent_2_wins:
-        return a1
-    return a2
-
+    # if logger.agent_1_wins > logger.agent_2_wins:
+    #     return a1
+    # return a2
+    return a1
 
 def test(iterations, a1, a2, random=False, return_both=False):
 
     # get exploration value
     a1_exploration = a1.exploration 
     a1.set_exploration(0)
-
 
     if random:
         np.random.seed()
