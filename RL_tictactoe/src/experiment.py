@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import copy
 
 from .logger import Logger
 from .tictactoe import TicTacToe
@@ -64,7 +65,8 @@ def run_games(iterations, a1, a2, logger, **kwargs):
 
 def train(iterations, a1, a2, random=False, return_both=False):
 
-    np.random.seed()
+    if random:
+        np.random.seed()
 
     # Hyperparameters
     alpha = 0.2
@@ -74,7 +76,11 @@ def train(iterations, a1, a2, random=False, return_both=False):
     run_games(iterations, a1, a2, logger, training=True,
               alpha=alpha, decrease_factor=decrease_factor, decrease_rate=decrease_rate)
     if return_both:
+        print("TRAIN VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
+            (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),
+            (logger.ties / iterations)))
         return [a1, a2]
+
     if a2.dummy:
         print("TRAIN VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
             (logger.agent_1_wins / iterations), (logger.agent_2_wins / iterations),
@@ -89,7 +95,16 @@ def train(iterations, a1, a2, random=False, return_both=False):
     return a2
 
 
-def test(iterations, a1, a2):
+def test(iterations, a1, a2, random=False, return_both=False):
+
+    # get exploration value
+    a1_exploration = a1.exploration 
+    a1.set_exploration(0)
+
+
+    if random:
+        np.random.seed()
+        
     logger = Logger()
     run_games(iterations, a1, a2, logger)
 
@@ -98,9 +113,17 @@ def test(iterations, a1, a2):
     losses = logger.agent_2_wins / iterations
     ties = logger.ties / iterations
 
-    if a2.dummy:
+    # set exploration back
+    a1.set_exploration(a1_exploration)
+
+    if return_both:
         print("TEST VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
             (wins), (losses), (ties)))
+        return [a1, a2]
+
+    if a2.dummy:
+        print("TEST VS. DUMMY: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
+            (wins), (losses), (ties))) 
     else:
         print("TEST VS. LEARNING AGENT: agent 1 wins: {}, agent 2 wins: {}, ties: {}".format(
             (wins), (losses), (ties)))
