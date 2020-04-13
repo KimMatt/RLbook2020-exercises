@@ -29,3 +29,5 @@ We have also implemented experiments that train multiple agents in parallel, and
 If you would like to vs. our meta agent then you may play it by running `python game.py` on python 3.5.2. Please remember to `pip install requirements.txt` before running the game.
 
 The game will show you what the agent is "thinking" by coloring available blocks according to its policy map values before it makes its move. Red being the lowest value, green the greatest.
+
+![](./output/screenshots/game.png)
