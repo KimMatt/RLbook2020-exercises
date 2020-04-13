@@ -3,8 +3,7 @@
 
 # Pyenv
 *.python-version
-# Pickle files
-*.p
+
 # PyCache
 *.pyc
 __pycache__
