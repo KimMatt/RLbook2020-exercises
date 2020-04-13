@@ -3,8 +3,8 @@
 
 import os
 import time
-import pygame
 import pickle
+import pygame
 from pygame.locals import (
     QUIT,
     MOUSEBUTTONUP
@@ -12,6 +12,7 @@ from pygame.locals import (
 from src.tictactoe import TicTacToe
 from src.logger import Logger
 from src.agent import Agent
+
 
 def load_agent(filename):
     agent_policy = pickle.load(open("policies/" + filename + ".p", "rb"))
@@ -54,6 +55,7 @@ if __name__ == "__main__":
         screen.blit(win_surface, (PADDING, WINDOW_WIDTH + (PADDING*2)))
         screen.blit(loss_surface, (PADDING, WINDOW_WIDTH + (PADDING*3)))
         screen.blit(tie_surface, (PADDING, WINDOW_WIDTH + (PADDING*4)))
+
 
     def draw_colored_window(screen, color):
         pygame.draw.line(screen, color, (PADDING, PADDING + BOX_WIDTH), (PADDING + (BOX_WIDTH * 3), PADDING + BOX_WIDTH), LINE_WIDTH + 1)
