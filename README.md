@@ -1,5 +1,5 @@
 # RL_Projects
-Reinforcement Learning Coding Projects
+Games with RL agents inspired by following the exercises and projects in https://web.stanford.edu/class/psych209/Readings/SuttonBartoIPRLBook2ndEd.pdf
 
 ## Requirements
 python 3.5.2
