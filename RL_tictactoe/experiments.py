@@ -250,12 +250,7 @@ if __name__ == "__main__":
     
     # Build meta agent ----------
     meta_agent, meta_scores = build_meta_agent(get_scores=True)
-<<<<<<< HEAD
-    
-=======
 
-
->>>>>>> ca2b0dab4109b94b7337ffa903095ba3ba71ab1e
     # Comparison -----------
     # - builds players
     a1 = Agent(1, 0.5)
