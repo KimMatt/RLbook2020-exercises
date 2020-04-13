@@ -1,6 +1,6 @@
 # RL Tic Tac Toe
 
-This project contains a tic tac toe agent that uses temporal difference to learn. Multi threaded training, Adaboost inspired combined policies, symmetric awareness, interface for a human to vs. the agent. It has an 'expert' agent taken from [billtub's gamelearner](https://github.com/billtubbs/game-learner) and a random agent. The temporal difference update rule is described below.
+This project contains a tic tac toe agent that uses temporal difference to learn. Multi threaded training, ensembled agents, symmetric awareness, interface for a human to vs. the agent. It has an 'expert' agent taken from [billtub's gamelearner](https://github.com/billtubbs/game-learner) and a random agent. The temporal difference update rule is described below.
 
 If you would like to vs. our meta agent then you may play it by running `python game.py` on python 3.5.2. Please remember to `pip install requirements.txt` before running the game.
 
