@@ -56,7 +56,7 @@ class Agent:
 
     # Get the policy map of the agent
     def get_policy(self):
-        return self.policy 
+        return self.policy
 
 
     def set_policy(self, policy):
@@ -113,8 +113,7 @@ class Agent:
         return state_p_value
 
 
-    def play(self):
-        # Compute the likelihoods for each move
+    def get_possible_move_infos(self):
         possible_move_infos = []
         for move in self.game.possible_moves:
             possible_game_state = self.game.game_state[:]
@@ -122,8 +121,12 @@ class Agent:
             # possible_move_infos = [(percentage_chance_to_win, move, game_state_as_a_result)]
             possible_move_infos.append(
                 (self.state_p(possible_game_state), move, possible_game_state))
+        return possible_move_infos
 
-        
+
+    def play(self):
+        # Compute the likelihoods for each move
+        possible_move_infos = self.get_possible_move_infos()
         # Based on our exploration value, see if we explore or exploit
         explore = np.random.uniform(0, 1) <= self.exploration
         possible_move_infos.sort()
@@ -244,9 +247,9 @@ class ExpertPlayer(Agent):
 
     def play(self):
         available_moves = self.game.possible_moves[:]
-        
+
         def get_move(self):
-            
+
             corners = [0,2,6,8]
             center = 4
 
@@ -290,4 +293,4 @@ class ExpertPlayer(Agent):
         # play the move
         move_location = get_move(self)
         self.game.play_move(self.player_n, move_location)
-        
+
