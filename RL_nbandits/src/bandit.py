@@ -18,7 +18,8 @@ class Distribution:
         pass
 
 
-class UniformDistribution(Distribution):
+# Normal Distribution - NOT UNIFORM
+class NormalDistribution(Distribution):
 
     def __init__(self, chance, mean, std):
         super().__init__(chance)
@@ -45,3 +46,9 @@ class Bandit:
 
     def add_distribution(self, distribution, n):
         self.distributions.append(distribution)
+
+
+# Example
+bandit = Bandit(4)
+bandit.sample(2)
+print(bandit.distributions)
