@@ -44,24 +44,6 @@ class Bandits:
         self.bandits = np.add(self.bandits,random_walk)
 
     def sample(self, n):
-<<<<<<< HEAD
-        which = np.random.uniform(0, 1)
-        cumulative_chance = 0.0
-        for distribution in self.distributions[n]:
-            if which <= distribution.chance + cumulative_chance:
-                return distribution.sample()
-            cumulative_chance += distribution.chance
-        raise IncompleteBanditException
-
-    def add_distribution(self, distribution, n):
-        self.distributions.append(distribution)
-
-
-# Example
-bandit = Bandit(4)
-bandit.sample(2)
-print(bandit.distributions)
-=======
         noise = np.random.normal(loc=0.0, scale=1.0)
         return self.bandits[n] + noise
 
@@ -73,4 +55,3 @@ print(bandit.distributions)
                 optimal_value = self.bandits[i]
                 optimal_n = i
         return (optimal_n, optimal_value)
->>>>>>> dc85eaeabd9f881efea17006c9d148ad7e5a10c4

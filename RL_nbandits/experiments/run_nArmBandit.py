@@ -78,54 +78,23 @@ def get_scores_parallel(trials=10, iterations=2000,
     return df_avg, df_totals
 
 
+# Run
+def run():
+    # Run trials
+    df_avgs, df_totals = get_scores_parallel(iterations=10000, epsilon=[0, 0.1, 0.01])
 
+    # Plot Averages
+    df_avgs.plot()
+    plt.title('Average Reward for 10, 10-Arm Bandits', fontsize=18)
+    plt.xlabel('Average of Average Rewards')
+    plt.ylabel('Iteration')
+    plt.savefig('plots/nArmBandit_AverageReward.png')
+    plt.show()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def run_trials(arms=10, epsilon=[0, 0.1, 0.01], 
-#                n_trials = 10, iterations = 2000):
-
-#     total_list, averages_list = [], []
-
-#     # Run Trials
-#     for j in range(n_trials):
-        
-#         bandit = Bandit(arms, epsilon)
-#         # iterate action
-#         totals, averages = [], []
-#         for i in range(iterations):
-#             bandit.update()
-
-#             # get score values
-#             total = bandit.get_average() * np.sum(bandit.turns)
-#             average = bandit.get_average()
-#             totals.append(total)
-#             averages.append(average)
-    
-#         total_list.append(totals)
-#         averages_list.append(averages)
-            
-#     # Average Trials
-#     results_total = [sum(s) / 10 for s in zip(*total_list)]
-#     results_averages = [sum(s) / 10 for s in zip(*averages_list)]
-
-#     return results_total, results_averages
+    # Plot Totals
+    df_totals.plot()
+    plt.title('Total Reward for 10, 10-Arm Bandits', fontsize=18)
+    plt.xlabel('Total of Average Rewards')
+    plt.ylabel('Iteration')
+    plt.savefig('plots/nArmBandit_TotalReward.png')
+    plt.show()
