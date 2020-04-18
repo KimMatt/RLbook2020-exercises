@@ -92,4 +92,4 @@ class Experiment:
         graph.set_xlabel("iterations")
         if y_label:
             graph.set_ylabel(y_label)
-        graph.save_fig(self.title + ".svg")
+        graph.save_fig("figs/" + self.title + ".svg")
