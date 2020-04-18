@@ -4,15 +4,14 @@
 import numpy as np
 
 
-class Agent:
+class SimpleAgent:
 
     def __init__(self, exploration, n, val_init, bandit):
         self.exploration = exploration
-        self.context_policy = None #TODO: Figure this part out
         self.policy = [val_init for i in range(n)]
+        self.k_tracker = [1.0 for i in range(n)]
         self.bandit = bandit
         self.score = 0
-
 
     def play(self):
         explore = np.random.uniform(0,1) <= self.exploration
@@ -26,15 +25,15 @@ class Agent:
             else:
                 break
         if not explore:
-            which_optimal = np.random.randint(
+            which = np.random.randint(
                 len(sorted_policy)-num_optimal-1, len(sorted_policy))
         else:
-            which_optimal = np.random.randint(
+            which = np.random.randint(
                 0, len(sorted_policy)-num_optimal)
-        reward = self.bandit.sample(sorted_policy[which_optimal][1])
+        reward = self.bandit.sample(sorted_policy[which][1])
         self.score += reward
         return reward
 
-
-    def update_reward(self, n):
-        pass
+    def update_reward(self, n, reward):
+        self.k_tracker[n] += 1.0
+        self.policy[n] += ((1.0/self.k_tracker[n]) * (reward - self.policy(n)))
