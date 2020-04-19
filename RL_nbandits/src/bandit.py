@@ -29,7 +29,7 @@ class UniformDistribution(Distribution):
         return np.random.normal(loc=self.mean, scale=self.std)
 
 
-class Bandits:
+class NBandits:
 
     walk_amount = 0.2
 
@@ -38,7 +38,7 @@ class Bandits:
         self.bandits = np.array([np.random.normal(
             loc=0.0, scale=1.0) for i in range(n)])
 
-    def random_walk_bandits(self):
+    def random_walk(self):
         random_walk = np.array([0.2 * (np.random.randint(3) - 1) for i in range(self.n)])
         self.bandits = np.add(self.bandits,random_walk)
 

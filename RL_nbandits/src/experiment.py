@@ -53,12 +53,12 @@ class Trial:
 class Experiment:
 
     @staticmethod
-    def run_trial(**kwargs):
+    def run_trial(kwargs):
         trial = kwargs.get("trial")
         iterations = kwargs.get("iterations")
-        trial.run(iterations, kwargs)
+        return trial.run(iterations)
 
-    def __init__(self, trials, title, iterations):
+    def __init__(self, trials, title):
         """Initialize the Experiment object
 
         Args:
@@ -67,7 +67,6 @@ class Experiment:
         """
         self.trials = trials
         self.title = title
-        self.iterations = iterations
 
     def run_parallel(self, iterations):
         """Run the trials and save their results
@@ -76,7 +75,7 @@ class Experiment:
             iterations ([int]): number of iterations to run for every trial
         """
         with Pool(len(self.trials)) as p:
-            pool_args = [{"trial": trial, "iterations": self.iterations}
+            pool_args = [{"trial": trial, "iterations": iterations}
                          for trial in self.trials]
             experiment_logs = p.map(Experiment.run_trial, pool_args)
         self.experiment_logs = experiment_logs
@@ -88,8 +87,9 @@ class Experiment:
             y_label ([string]): optionally add a y label
         """
         data = pd.DataFrame({e_log.label: e_log.log for e_log in self.experiment_logs})
-        graph = data.plot(kind="line", title=self.title).get_figure()
-        graph.set_xlabel("iterations")
+        graph = data.plot(kind="line", title=self.title)
+        graph.set_x_label("iterations")
         if y_label:
-            graph.set_ylabel(y_label)
+            graph.set_y_label(y_label)
+        graph = graph.get_figure()
         graph.save_fig("figs/" + self.title + ".svg")
