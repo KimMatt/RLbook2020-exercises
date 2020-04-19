@@ -10,9 +10,26 @@ your answer quantitatively.*
 ## Exercise 2.2
 *Give pseudocode for a complete algorithm for the n-armed
 bandit problem. Use greedy action selection and incremental computation of
-action values with α = 1/k step-size parameter. Assume a function bandit(a) that takes an action and returns a reward. Use arrays and variables; do not 52 CHAPTER 2. MULTI-ARM BANDITS subscript anything by the time index t (for examples of this style of pseudocode, see Figures 4.1 and 4.3). Indicate how the action values are initialized
+action values with α = 1/k step-size parameter. Assume a function bandit(a) that takes an action and returns a reward. Use arrays and variables; do not subscript anything by the time index t (for examples of this style of pseudocode, see Figures 4.1 and 4.3). Indicate how the action values are initialized
 and updated after each reward. Indicate how the step-size parameters are set
 for each action as a function of how many times it has been tried.*
+
+
+```
+Initialize policy map [] of length n to val_init (default 0)
+Set alpha = 1.0
+Set k map = [1.0 array of length n]
+Set exploration = some constant between 0 and 1
+Repeat while playing:
+    random = random value between 0 and 1 sampled from a uniform distribution
+    If random <= explore:
+        arm = random integer between 0 and n
+    else:
+        arm = index of max value from policy map
+    reward = bandit(arm)
+    Set k maps[arm] += 1.0
+    policy_map[arm] += (1.0/k maps[arm]) * (reward - policy_map[arm])
+```
 
 ## Exercise 2.3
 *If the step-size parameters, αk, are not constant, then the estimate Qk is a weighted average of previously received rewards with a weighting
