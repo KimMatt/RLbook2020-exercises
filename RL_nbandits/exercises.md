@@ -33,7 +33,7 @@ These are the cumulative rewards of running the described experiment 100 times w
 
 ```sample wins: 36 const wins: 60 ties: 4```
 
-The reason we ran so many iterations of the experiment was because when we ran them independently, the results were inconsistent. However, over a large number of trials, the sample methods always did worse than the constant.
+The reason we ran so many iterations of the experiment was because when we ran them independently, the results were inconsistent. However over a large number of trials the sample methods did worse than the constant method.
 
 During the creation of this experiment it was discovered that the sample method actually does better than the constant method when every arm takes a random walk in the same direction. In other words, when the entire n-armed bandits takes a random walk. Here the bandit would move all distributions in the same direction with the same unit.
 
@@ -41,7 +41,7 @@ During the creation of this experiment it was discovered that the sample method 
 
 ```sample wins: 75 const wins: 25 ties: 0```
 
-Our conclusion is that the constant method is better for a non stationary problem with many independently moving parts, however the sample method will perform better than a constant method on a non stationary problem where the entire environment changes in the same direction.
+The sample method will perform better than a constant method on a non stationary problem where the entire environment changes in the same direction.
 
 This is because if all the arms are moving in the same direction, then whatever is optimal will remain optimal. This problem is really only technically stationary. Perhaps stationary should be defined in such a way that the optimal actions must change.
 
@@ -51,15 +51,17 @@ We were curious what would happen if we made a bandit which had a random walk wi
 
 ```sample wins: 31 const wins: 63 ties: 6```
 
-The result was consistent with the first experiment. Thus we can see that the constant update method performs better for a nonstationary problem where the optimal move is subject to change. This must be because the weighting of new rewards is made to be equal to old rewards. With sampling methods, the weight of new rewards is diminished each time a step is taken because k grows larger with each step.
+The result was consistent with the first experiment. Thus, we can see that the constant update method performs better for a nonstationary problem where the optimal arm is subject to change.
+
+With a constant method new rewards are factored in with equal magnitude to old rewards. In sampling methods, the weight of new rewards are diminished each time a step is taken because k grows larger with each step, so when the optimal move changes at a constant rate it's difficult for the sampling method to take enough steps to make enough of a change to its policy. In fact, as time goes on, it should get worse at this.
 
 This lead to a curiosity of what would happen if the weight of old rewards diminished over time?
 
 For this, we want a monotically increasing function. I chose to use `f(x) = tanh(x)` multiplied by a constant scalar.
 
-This resulted in a competitive result to the constant. The increasing method did not do as well against constant at the beginning. However, when I extended the length of a trial from 1000 to 5000 it became competitive; sometimes it would do better, equal, or worse. Overall, they always had the majority tied.
+This resulted in a competitive result to the constant method. The "increasing method" did not do as well against constant at the beginning. However, when I extended the length of a trial from 1000 to 5000 it became competitive; sometimes it would do better, equal, or worse. Overall, they always had a majority tied.
 
-~[](figs/Exercise_2.4_3.png)
+![](figs/Exercise_2.4_3.png)
 
 ```increasing wins: 14 const wins: 12 ties: 74```
 
