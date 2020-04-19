@@ -53,7 +53,7 @@ We were curious what would happen if we made a bandit which had a random walk wi
 
 The result was consistent with the first experiment. Thus, we can see that the constant update method performs better for a nonstationary problem where the optimal arm is subject to change.
 
-With a constant method new rewards are factored in with equal magnitude to old rewards. In sampling methods, the weight of new rewards are diminished each time a step is taken because k grows larger with each step, so when the optimal move changes at a constant rate it's difficult for the sampling method to take enough steps to make enough of a change to its policy. In fact, as time goes on, it should get worse at this.
+With a constant method new rewards are weighed in with equal magnitude to the policy. In sampling methods, the weight of new rewards are diminished as time increases because k grows larger with each time step. When the optimal arm changes it's difficult for the sampling method to take enough steps to make enough change to its policy to reflect this. As time goes on, the sampling method actually get worse at this. This is because it's slowing down the rate of change to its policies while the optimal arm's rate of change is random.
 
 This lead to a curiosity of what would happen if the weight of old rewards diminished over time?
 
