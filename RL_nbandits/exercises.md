@@ -36,6 +36,8 @@ Repeat while playing:
 different from that given by (2.6). What is the weighting on each prior reward
 for the general case, analogous to (2.6), in terms of αk?*
 
+
+
 ## Exercise 2.4
 *Design and conduct an experiment to demonstrate the difficulties that sample-average methods have for nonstationary
 problems. Use a modified version of the 10-armed testbed in which all the
@@ -72,24 +74,22 @@ The result was consistent with the first experiment. Thus, we can see that the c
 
 With a constant method new rewards are weighed in with equal magnitude to the policy. In sampling methods, the weight of new rewards are diminished as time increases because k grows larger with each time step. When the optimal arm changes it's difficult for the sampling method to take enough steps to make enough change to its policy to reflect this. As time goes on, the sampling method actually get worse at this. This is because it's slowing down the rate of change to its policies while the optimal arm's rate of change is random.
 
-This lead to a curiosity of what would happen if the weight of old rewards diminished over time?
-
-For this, we want a monotically increasing function. I chose to use `f(x) = tanh(x)` multiplied by a constant scalar.
-
-This resulted in a competitive result to the constant method. The "increasing method" did not do as well against constant at the beginning. However, when I extended the length of a trial from 1000 to 5000 it became competitive; sometimes it would do better, equal, or worse. Overall, they always had a majority tied.
-
-![](figs/Exercise_2.4_3.png)
-
-```increasing wins: 14 const wins: 12 ties: 74```
-
 
 ## Exercise 2.5
 *The results shown in Figure 2.2 should be quite reliable because they are averages over 2000 individual, randomly chosen 10-armed bandit tasks. Why, then, are there oscillations and spikes in the early part of
 the curve for the optimistic method? What might make this method perform
 particularly better or worse, on average, on particular early plays?*
 
-## Exercise 2.6
+Because the optimistic initial values are so much larger than the possible values, and because the alpha value is only 0.1, it would take a large number of steps to bring the policy estimates down to reality. During this time, the agent would theoretically bring down the policy values of the less optimal arms with a larger difference than the optimal arm. However it would still end up performing a round-robin like policy. Say the optimal value always returns 1 and the rest return -1. Even if the optimal value is tried first, the rest of the values will still have optimistic policy values of 5 compared to the rest s o it'll try those out as well. After one round robin, the optimal value's policy guess would be `5 - 0.1 * 4 = 4.6` while the non optimal would be `5 - 0.1 * 5 = 4.4`. It would exploit the optimal value but then find that its policy estimate has become lower than the non optimals, and then try those. This process would repeat so the actual rewards resulted would be extremely sporadic until the estimates become closer to the real values.
 
+This is an extreme case to illustrate the oscillations.
+
+The spikes can occur because of the same reasons as demonstrated here when the policy values get closer to the real. It would take more steps exploiting the optimal action before its policy value becomes less than the other actions because the difference is smaller, thus the update would be smaller.
+
+When the distribution of agents are more evened out, then the agent would play better on early plays. Especially if there are a few close to optimal agents. The agent could end up alternating between six optimal and near optimal arms, and then reducing the policy for four other less optimals. Overall, the more near optimal arms there are, the better this agent would perform at the beginning. If there's only one optimal arm, this agent would perform worse.
+
+
+## Exercise 2.6
 *Suppose you face a binary bandit task whose true action values change randomly from play to play. Specifically, suppose that for any play the true values of actions 1 and 2 are respectively 0.1 and 0.2 with probability 0.5
 (case A), and 0.9 and 0.8 with probability 0.5 (case B). If you are not able to
 tell which case you face at any play, what is the best expectation of success
@@ -98,3 +98,12 @@ on each play you are told if you are facing case A or case B (although you still
 don’t know the true action values). This is an associative search task. What
 is the best expectation of success you can achieve in this task, and how should
 you behave to achieve it?*
+
+The best expectation of success would be to get a cumulative value of 0.5*t where t is the number of steps.
+
+This is because `0.5*(0.1) + 0.5*(0.9) = 0.5` and `0.5*(0.2) + 0.5*(0.8) = 0.5`. The expected values of playing either move is 0.5. Thus, no matter what combination of moves you play overall, the expected value is 0.5.
+
+Assuming that you run the task until you get an estimate for each action per task, then the best case you can achieve would be:
+`0.5 * (0.9 + 0.2) = 0.55`. So the best case expected value is 0.55*t.
+
+To get this you should have two policy maps for each case you are facing and perform a standard, mostly greedy agent on both tasks. It would make sense to set initial values to 0.5, and to diminish the exploration factor to 0 over time because this is a stationary task.
