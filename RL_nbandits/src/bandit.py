@@ -2,7 +2,7 @@
 # class to interface with for a bandit AKA a randomly distributed 'slot machine'
 
 import numpy as np
-
+"""
 class IncompleteBanditException(Exception):
 
     def __init__(self):
@@ -27,31 +27,45 @@ class NormalDistribution(Distribution):
         self.mean = mean
 
     def sample(self):
-        return np.random.normal(loc=self.mean, scale=self.std)
+        return np.random.normal(loc=self.mean, scale=self.std)"""
 
 
 class NBandits:
 
-    walk_amount = 0.2
+    walk_amount = 0.1
 
-    def __init__(self, n):
+    def __init__(self, n, random=True):
         self.n = n
-        self.bandits = np.array([np.random.normal(
-            loc=0.0, scale=1.0) for i in range(n)])
+        if random:
+            self.bandits = np.array([np.random.normal(
+                loc=0.0, scale=1.0) for i in range(n)])
+        else:
+            self.bandits = np.array([0.0 for i in range(n)])
 
-    def random_walk(self):
-        random_walk = np.array([0.2 * (np.random.randint(3) - 1) for i in range(self.n)])
-        self.bandits = np.add(self.bandits,random_walk)
+    def independent_random_walk(self):
+        for i in range(self.n):
+            sign = 1 if np.random.randint(2) else -1
+            self.bandits[i] += sign * 0.2
+
+    def alternating_dependent_random_walk(self):
+        sign = 1 if np.random.randint(2) else -1
+        for i in range(self.n):
+            self.bandits[i] += sign * 0.2
+            sign = sign * -1.0
+
+    def total_random_walk(self):
+        sign = 1 if np.random.randint(2) else -1
+        self.bandits = [self.bandits[i] + sign * 0.2 for i in range(self.n)]
 
     def sample(self, n):
         noise = np.random.normal(loc=0.0, scale=1.0)
         return self.bandits[n] + noise
 
     def get_optimal(self):
-        optimal_n = 0
-        optimal_value = self.bandits[0]
+        opt_arm = 0
+        opt_val = self.bandits[0]
         for i in range(self.n):
-            if optimal_value < self.bandits[i]:
-                optimal_value = self.bandits[i]
-                optimal_n = i
-        return (optimal_n, optimal_value)
+            if opt_val < self.bandits[i]:
+                opt_val = self.bandits[i]
+                opt_arm = i
+        return (opt_arm, opt_val)

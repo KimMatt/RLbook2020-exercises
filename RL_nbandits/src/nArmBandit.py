@@ -3,12 +3,11 @@
 # incremental actions with alpha = 1/k step-size parameter
 # bandit(a) takes action and returns award
 
-# Q_k+1 = 1/k * sum(R_1_to_k) 
+# Q_k+1 = 1/k * sum(R_1_to_k)
 import random
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns 
 
 
 class Bandit():
@@ -20,9 +19,9 @@ class Bandit():
         self.total_rewards = [0]*n
         self.avg_rewards = [0] * n
         self.rewards = [np.random.normal() for i in range(n)]
-    
+
     def set_rewards(self, rewards):
-        self.rewards = rewards 
+        self.rewards = rewards
 
     def choose(self):
         # random epilson, non-greedy parameter
@@ -46,13 +45,13 @@ class Bandit():
 
         # update totalulative rewards
         self.total_rewards[arm] += reward
-        
+
         # update average reward
         if self.turns[arm] == 0:
-            self.avg_rewards[arm] += reward 
+            self.avg_rewards[arm] += reward
         else:
             self.avg_rewards[arm] += (1 / self.turns[arm]) * \
-                                            (reward - self.avg_rewards[arm]) 
+                                            (reward - self.avg_rewards[arm])
 
         self.avg_rewards = self.avg_rewards
         # update turns

@@ -2,10 +2,12 @@
 # Definition of the agent to play nbandits
 
 import numpy as np
+import math
 
 
 class SimpleAgent:
 
+    accepted_types = {"means": True, "constant": True, "increasing": True}
 
     def __init__(self, exploration, val_init, bandit, **kwargs):
         """[summary]
@@ -16,42 +18,49 @@ class SimpleAgent:
             bandit ([Object]): bandit object to interface with
             kwargs:
                 method ([string], optional): method of updating policies
-                                            can be 'means' or 'constant'.
+                                            can be 'means', 'constant', or 'increasing'
                                             Defaults to means.
                 constant ([float], optional): specifies the constant for constant method
         """
+        self.total_plays = 0
+        self.total_rewards = 0
+
         self.exploration = exploration
         self.bandit = bandit
         n = self.bandit.n
         self.policy = [val_init for i in range(n)]
         self.k_tracker = [1.0 for i in range(n)]
-        self.total_plays = 0
+
         self.method = kwargs.get("method") if kwargs.get("method") else "means"
-        self.constant = 0.1 if not kwargs.get("constant") else kwargs.get("constant")
+        if not self.accepted_types.get(self.method):
+            raise Exception
+        self.constant = kwargs.get("constant") if kwargs.get("constant") else 0.1
 
-    def update_reward_means_method(self, n, reward):
-        self.k_tracker[n] += 1.0
-        self.policy[n] += float((1.0/self.k_tracker[n]) * (reward - self.policy(n)))
+    def update_reward_means_method(self, arm, reward):
+        self.k_tracker[arm] += 1.0
+        self.policy[arm] += float((1.0/self.k_tracker[arm]) * (reward - self.policy[arm]))
 
-    def update_reward_constant(self, n, reward, alpha):
-        self.policy[n] += float(alpha * (reward - self.policy(n)))
+    def update_reward_constant(self, arm, reward):
+        self.policy[arm] += float(self.constant * (reward - self.policy[arm]))
+
+    def update_reward_increasing(self, arm, reward):
+        self.k_tracker[arm] += 1.0
+        self.policy[arm] += float(math.tanh(self.k_tracker[arm]) * self.constant * (reward - self.policy[arm]))
 
     def play(self):
-        explore = np.random.uniform(0,1) <= self.exploration
-        sorted_policy = self.policy[:]
-        sorted_policy = [(x,i) for i,x in enumerate(sorted_policy)]
-        list.sort(sorted_policy)
-        num_optimal = 0
-        for i in range(len(sorted_policy)-1, -1, -1):
-            if sorted_policy[i][0] == sorted_policy[-1][0]:
-                num_optimal += 1
-            else:
-                break
-        if not explore:
-            which = np.random.randint(
-                len(sorted_policy)-num_optimal-1, len(sorted_policy))
+        explore = np.random.uniform(0, 1) <= self.exploration
+        max_value = np.max(np.array(self.policy))
+        if explore:
+            arm = np.random.randint(self.bandit.n)
         else:
-            which = np.random.randint(
-                0, len(sorted_policy)-num_optimal-1)
-        self.total_plays += 1
-        return sorted_policy[which]
+            max_value = np.max(np.array(self.policy))
+            arm = self.policy.index(max_value)
+        reward = self.bandit.sample(arm)
+        if self.method == "means":
+            self.update_reward_means_method(arm, reward)
+        elif self.method == "constant":
+            self.update_reward_constant(arm, reward)
+        elif self.method == "increasing":
+            self.update_reward_increasing(arm, reward)
+        self.total_rewards += reward
+        return reward

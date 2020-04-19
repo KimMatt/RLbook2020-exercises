@@ -98,10 +98,10 @@ class Experiment:
             graph.set_ylabel(y_label)
 
         try:
-            f.savefig("figs/" + self.title + ".svg")
+            f.savefig("figs/" + self.title + ".png")
         except:
             os.mkdir("figs")
-            f.savefig("figs/" + self.title + ".svg")
+            f.savefig("figs/" + self.title + ".png")
 
         if show:
             plt.show()
