@@ -1,7 +1,9 @@
 # experiment.py
 # A combination of Classes to use to run an experiment.
+import os
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from multiprocessing import Pool
 
 
@@ -67,6 +69,7 @@ class Experiment:
         """
         self.trials = trials
         self.title = title
+        self.experiment_logs = []
 
     def run_parallel(self, iterations):
         """Run the trials and save their results
@@ -79,8 +82,9 @@ class Experiment:
                          for trial in self.trials]
             experiment_logs = p.map(Experiment.run_trial, pool_args)
         self.experiment_logs = experiment_logs
+        return experiment_logs
 
-    def produce_plot(self, y_label=None):
+    def produce_plot(self, y_label=None, show=False):
         """Produces and saves a plot resulting from the experiment
 
         Args:
@@ -88,8 +92,16 @@ class Experiment:
         """
         data = pd.DataFrame({e_log.label: e_log.log for e_log in self.experiment_logs})
         graph = data.plot(kind="line", title=self.title)
-        graph.set_x_label("iterations")
+        graph.set_xlabel("iterations")
+        f = graph.get_figure()
         if y_label:
-            graph.set_y_label(y_label)
-        graph = graph.get_figure()
-        graph.save_fig("figs/" + self.title + ".svg")
+            graph.set_ylabel(y_label)
+
+        try:
+            f.savefig("figs/" + self.title + ".svg")
+        except:
+            os.mkdir("figs")
+            f.savefig("figs/" + self.title + ".svg")
+
+        if show:
+            plt.show()
