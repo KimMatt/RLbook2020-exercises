@@ -15,8 +15,8 @@ class Bandit():
     def __init__(self, n, epsilon):
         self.epsilon = epsilon
         self.n = n
-        self.turns = [0]*n
-        self.total_rewards = [0]*n
+        self.turns = [1]*n
+        self.total_rewards = [0] * n
         self.avg_rewards = [0] * n
         self.rewards = [np.random.normal() for i in range(n)]
 
@@ -28,7 +28,7 @@ class Bandit():
         choose_random = random.random() < self.epsilon
 
         # chooses arm based on avg reward and epsilon
-        if (np.sum(self.turns) == 0) or choose_random:
+        if (np.sum(self.turns) == self.n) or choose_random:
             arm = np.random.randint(self.n)
         else:
             max = np.max(self.avg_rewards)
@@ -59,7 +59,7 @@ class Bandit():
 
     # Get average rewards
     def get_average(self):
-        reward = np.dot(self.turns, self.avg_rewards) / np.sum(self.turns)
+        reward = np.sum(self.total_rewards) / (np.sum(self.turns) - self.n)
         return reward
 
 
