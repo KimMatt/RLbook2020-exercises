@@ -223,3 +223,89 @@ $q_π(s,a) = \sum_{s'}p(s',r|s,a)*[r + γv_π(s')]$
 ## Exercise 3.14
 *Draw or describe the optimal state-value function for the golf
 example.*
+
+The optimal state-value function for the golf example would equal to the maximum expected return value from state s depending on which action is selected. For the golf problem state is described as the negative of how many strokes away the ball is from the hole in an optimal case. However, because there is an accuracy distribution we have to take into account the probabilites of getting to a state s+1 (in this case +1 is good) given a certain action. The optimal state-value function will equal to the largest expected value of taking an action a.
+
+Where p, d = putter, driver
+
+$v*(s) = max_{a\in(p,d)}$
+
+{p(s-1,-1|s,p) * [-1 + γv*(s-1)],
+
+p(s,-1|s,p) * [-1 + γv*(s)],
+
+p(s+1,-1|s,p) * [-1 + γv*(s+1)],
+
+p(s-1,-1|s,d) * [-1 + γv*(s-1)],
+
+p(s,-1|s,d) * [-1 + γv*(s)],
+
+p(s+1,-1|s,d) * [-1 + γv*(s+1)]}
+
+However, since we are assuming we can putt/drive with optimal accuracy then p(s-1, -1|s,p) is equal to 1 and since the driver has the longest distance possible the optimal choice is to just use the driver each time.
+
+$v*(s) = -1 + γv*(s-1)$
+
+## Exercise 3.15
+Draw or describe the contours of the optimal action-value
+function for putting, q∗(s, putter), for the golf example.
+
+![](q*(s,putter).png)
+
+From anywhere in the -4 area the agent can putt once, then use the driver 3 times to get it into the hole.
+
+From anywhere in the -3 area the agent can putt once, then use the driver twice to get into the hole. This includes the sand areas because when it putts once, it goes nowhere, then they would use the driver to get it in the green and can either putt or use the driver again to get it into the hole.
+
+From anywhere in the -2 area the agent can putt once, get it in the green, then use the putter to get it into the hole.
+
+From anywhere on the green it only takes one putt to get it into the hole.
+
+## Exercise 3.16
+Give the Bellman equation for q∗ for the recycling robot.
+
+$q_{*}(l,re) = γ*max_{a}\{q_{*}(h,s),q_{*}(h,w)\}$
+
+$q_{*}(l,s) = (1-β) * [-3 + γ*max_{a}\{q_{*}(h,s),q_{*}(h,w)\}] + β*[r_{s} + γ*max_{a}\{q_{*}(l,s),q_{*}(l,w),q_{*}(l,re)\}]$
+
+$q_{*}(l,w) = r_{w} + γ*max_{a}\{q_{*}(l,s),q_{*}(l,w),q_{*}(l,re)\}$
+
+$q_{*}(h,w) = r_{w} + γ*max_{a}\{q_{*}(h,s),q_{*}(h,w)\}$
+
+$q_{*}(h,s) = (1-α) * [r_{s} + γ*max_{a}\{q_{*}(l,s),q_{*}(l,w),q_{*}(l,re)\}] + α*[r_{s} + γ*max_{a}\{q_{*}(h,s),q_{*}(h,w)\}]$
+
+## Exercise 3.17
+Figure 3.8 gives the optimal value of the best state of the
+gridworld as 24.4, to one decimal place. Use your knowledge of the optimal
+policy and (3.2) to express this value symbolically, and then to compute it to
+three decimal places.
+
+v*(s) = max_{a}\{p(s',r|s,a) * [r + γ*v*(s')]}
+
+Since there is only one action to be done and one state to result in:
+
+v*(0,1) = 1 * [10 + γ*v*(s')] = 1 * [10 + 0.9 * 16.0] = 24.4
+
+But this is based on our 1 decimal accuracy so we get a 1 decimal answer...
+
+We must calculate v*(4,1) more accurately. I took the liberty of coding a dynamic programming approach to compute the value.
+Unfortunately, it would take an extremely long time to compute an answer accurate enough to this using my approach. The value I arrived at calculating up to a k=100,000 was: 13.574
+
+## Exercise 3.18
+Give a definition of v∗ in terms of q∗.
+
+$v_{*}(s) = \sum_{a}π_{*}(a|s)*γq_*(s,a)$
+
+## Exercise 3.19
+Give a definition of q∗ in terms of v∗.
+
+$q_{*}(s,a) = \sum_{s'}p(s',r|s,a) * [r + γv_{*}(s')]$
+
+## Exercise 3.20
+Give a definition of π∗ in terms of q∗.
+
+$π_{*}(a|s) = (1 if a \in max_{a'}\{q(s,a')\}) / (total number of max_{a'}\{q(s,a')\})$
+
+## Exercise 3.21
+Give a definition of π∗ in terms of v∗.
+
+$π∗(a|s) = (1 if a \in max_{a'}\sum_{s'}p(s',r|s,a')*[r+v*(s')])/(total number of max_{a'}\sum_{s'}p(s',r|s,a')*[r+v*(s')]$
