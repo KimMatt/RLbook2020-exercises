@@ -1,5 +1,5 @@
 # RL_Projects
-Implementations of methods and experiments from:
+Implementations of methods and exercises from:
 https://web.stanford.edu/class/psych209/Readings/SuttonBartoIPRLBook2ndEd.pdf
 
 ## Requirements
