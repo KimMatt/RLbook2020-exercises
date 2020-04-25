@@ -1,10 +1,11 @@
 # experiment.py
 # A combination of Classes to use to run an experiment.
 import os
+from multiprocessing import Pool
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from multiprocessing import Pool
 
 
 class ExperimentLog:
@@ -105,5 +106,5 @@ class Experiment:
 
         if show:
             plt.show()
-        
+
         return data

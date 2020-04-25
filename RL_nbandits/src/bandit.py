@@ -2,32 +2,6 @@
 # class to interface with for a bandit AKA a randomly distributed 'slot machine'
 
 import numpy as np
-"""
-class IncompleteBanditException(Exception):
-
-    def __init__(self):
-        super().__init__()
-
-
-class Distribution:
-
-    def __init__(self, chance):
-        self.chance = chance
-
-    def sample(self):
-        pass
-
-
-# Normal Distribution - NOT UNIFORM
-class NormalDistribution(Distribution):
-
-    def __init__(self, chance, mean, std):
-        super().__init__(chance)
-        self.std = std
-        self.mean = mean
-
-    def sample(self):
-        return np.random.normal(loc=self.mean, scale=self.std)"""
 
 
 class NBandits:

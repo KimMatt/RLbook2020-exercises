@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 
-class SimpleAgent:
+class Agent:
 
     accepted_types = {"means": True, "constant": True, "increasing": True}
 

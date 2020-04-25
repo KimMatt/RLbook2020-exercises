@@ -1,8 +1,7 @@
 # Fill in this file
-import numpy as np 
-from src.agent import SimpleAgent
+import numpy as np
+from src.agent import Agent
 from src.bandit import NBandits
-from src.nArmBandit import Bandit
 from src.experiment import Experiment, Trial
 
 
@@ -12,28 +11,26 @@ if __name__ == "__main__":
     # Exercise 2.1 ----------------------------------------
 
     # trial function
-    def run_bandit(args):
-        bandit_list = args['bandits']
-        rewards = [] 
-        for bandit in bandit_list:
-            bandit.update()
-            rewards.append(np.sum(bandit.total_rewards))
+    def run_agents(args):
+        agent_list = args['agents']
+        rewards = []
+        for agent in agent_list:
+            agent.play()
+            rewards.append(agent.total_rewards)
 
-        reward = np.mean(rewards)
-        return reward
+        avg_reward = np.mean(rewards)
+        return avg_reward
 
     # - bandit params
     n_arms = 10
-    e0, e01, e001 = [0]*10, [0.1]*10, [0.01]*10
-    epsilons = [e0, e01, e001]
-    rewards_control = [np.random.normal() for i in range(n_arms)]
-    bandits = [[Bandit(n_arms, e, rewards=rewards_control) for e in ep] for ep in epsilons]
+    epsilons = [0, 0.1, 0.01]
+    agents = [[Agent(ep, 0, NBandits(n_arms), method="means")
+                for i in range(10)] for ep in epsilons]
 
-   
     # Build Trials
-    trial_args = [{'bandits': bandit_list} for bandit_list in bandits]
-    trials = [Trial(run_bandit, trial_arg, 'Trials: ' + str(e[0])) 
-                for trial_arg, e in zip(trial_args, epsilons)]
+    trial_args = [{'agents': agent_list} for agent_list in agents]
+    trials = [Trial(run_agents, trial_arg, 'Epsilon: ' + str(trial_arg['agents'][0].exploration))
+                for trial_arg in trial_args]
     print(trials)
     # Experiment
     experiment = Experiment(trials, 'Exercise 2.1')
@@ -45,7 +42,7 @@ if __name__ == "__main__":
 
     def run_iteration_trial_one(nothing):
         bandit = NBandits(10)
-        agent = SimpleAgent(0.1, 0, bandit, method="means")
+        agent = Agent(0.1, 0, bandit, method="means")
         for i in range(5000):
             if agent.total_plays % 1 == 0:
                 agent.bandit.alternating_dependent_random_walk()
@@ -55,7 +52,7 @@ if __name__ == "__main__":
 
     def run_iteration_trial_two(nothing):
         bandit = NBandits(10)
-        agent = SimpleAgent(0.1, 0, bandit, method="constant", constant=0.1)
+        agent = Agent(0.1, 0, bandit, method="constant", constant=0.1)
         for i in range(5000):
             if agent.total_plays % 1 == 0:
                 agent.bandit.alternating_dependent_random_walk()

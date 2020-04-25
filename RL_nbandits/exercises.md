@@ -6,6 +6,11 @@ perform best in the long run in terms of cumulative reward and cumulative
 probability of selecting the best action? How much better will it be? Express
 your answer quantitatively.*
 
+![](figs/Exercise_2.1.png)
+
+These are the cumulative average rewards of running an agents with given epsilon values over 2000 steps.
+
+Epsilon of 0 looks as if it will have the smallest value while epsilon 0.01 looks like it will have the greatest. Although 0.01 starts off worse than 0.1, once it eventually discovers the optimal policy through its slow exploration, it begins to exploit it more than 0.1 would resulting in a greater cumulative reward.
 
 ## Exercise 2.2
 *Give pseudocode for a complete algorithm for the n-armed
@@ -35,15 +40,15 @@ Repeat while playing:
 *If the step-size parameters, αk, are not constant, then the estimate Qk is a weighted average of previously received rewards with a weighting
 different from that given by (2.6). What is the weighting on each prior reward
 for the general case, analogous to (2.6), in terms of αk?*
-  
-Q<sub>k+1</sub> = Q<sub>k</sub> + &alpha;<sub>k</sub> * [R<sub>k</sub> - Q<sub>k</sub>]  
 
-= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>) * Q<sub>k</sub>  
+Q<sub>k+1</sub> = Q<sub>k</sub> + &alpha;<sub>k</sub> * [R<sub>k</sub> - Q<sub>k</sub>]
 
-= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>) * [&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k-1</sub>) * Q<sub>k-1</sub>]  
-= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>) * Q<sub>k-1</sub>  
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>) * Q<sub>k</sub>
 
-= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>) * [&alpha;<sub>k-2</sub>R<sub>k-2</sub> + (1 - &alpha;<sub>k-2</sub>) * Q<sub>k-2</sub>]  
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>) * [&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k-1</sub>) * Q<sub>k-1</sub>]
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>) * Q<sub>k-1</sub>
+
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>) * [&alpha;<sub>k-2</sub>R<sub>k-2</sub> + (1 - &alpha;<sub>k-2</sub>) * Q<sub>k-2</sub>]
 = &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>)&alpha;<sub>k-1</sub>R<sub>k-2</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-2</sub>)(1 - &alpha;<sub>k-2</sub>) * Q<sub>k-2</sub>
 
 = $\alpha_{k}R_{k} + \sum_{i=1}^{k} [\alpha_{k-i}R_{k-i}\prod_{j=0}^{k-2}(1 - \alpha_{k-j})] + Q_{0}\prod_{j=0}^{k-1}(1 - \alpha_{k-j})$
