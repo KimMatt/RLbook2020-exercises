@@ -35,7 +35,20 @@ Repeat while playing:
 *If the step-size parameters, αk, are not constant, then the estimate Qk is a weighted average of previously received rewards with a weighting
 different from that given by (2.6). What is the weighting on each prior reward
 for the general case, analogous to (2.6), in terms of αk?*
+  
+Q<sub>k+1</sub> = Q<sub>k</sub> + &alpha;<sub>k</sub> * [R<sub>k</sub> - Q<sub>k</sub>]  
 
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>) * Q<sub>k</sub>  
+
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>) * [&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k-1</sub>) * Q<sub>k-1</sub>]  
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>) * Q<sub>k-1</sub>  
+
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>) * [&alpha;<sub>k-2</sub>R<sub>k-2</sub> + (1 - &alpha;<sub>k-2</sub>) * Q<sub>k-2</sub>]  
+= &alpha;<sub>k</sub>R<sub>k</sub> + (1 - &alpha;<sub>k</sub>)&alpha;<sub>k-1</sub>R<sub>k-1</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-1</sub>)&alpha;<sub>k-1</sub>R<sub>k-2</sub> + (1 - &alpha;<sub>k</sub>)(1 - &alpha;<sub>k-2</sub>)(1 - &alpha;<sub>k-2</sub>) * Q<sub>k-2</sub>
+
+= $\alpha_{k}R_{k} + \sum_{i=1}^{k} [\alpha_{k-i}R_{k-i}\prod_{j=0}^{k-1}(1 - \alpha_{k-j})]$
+
+ ...
 
 
 ## Exercise 2.4
