@@ -288,7 +288,7 @@ v*(0,1) = 1 * [10 + γ*v*(s')] = 1 * [10 + 0.9 * 16.0] = 24.4
 But this is based on our 1 decimal accuracy so we get a 1 decimal answer...
 
 We must calculate v*(4,1) more accurately. I took the liberty of coding a dynamic programming approach to compute the value.
-Unfortunately, it would take an extremely long time to compute an answer accurate enough to this using my approach. The value I arrived at calculating up to a k=100,000 was: 13.574
+The value I arrived at calculating up to 3 decimal point accuracy was: 24.419
 
 ## Exercise 3.18
 Give a definition of v∗ in terms of q∗.

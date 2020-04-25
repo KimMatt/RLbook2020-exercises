@@ -3,16 +3,6 @@
 # Used to compute the optimal solutions for the gridworld example.
 import numpy as np
 
-coords = []
-for x in range (0,5):
-    for y in range (0,5):
-        coords.append([x,y])
-coords = np.array(coords)
-
-d_factor = 0.9
-
-directions = np.array([[-1,0],[1,0],[0,1],[0,-1]])
-
 
 def get_actions(state):
     """Returns a list of the neighboring coords to go to as actions
@@ -23,6 +13,8 @@ def get_actions(state):
     Returns:
         [list]: list of [x,y] states
     """
+    directions = np.array([[-1, 0], [1, 0], [0, 1], [0, -1]])
+
     if all(np.equal(state, [0, 1])):
         return np.array([[4, 1]])
     if all(np.equal(state, [0, 3])):
@@ -55,37 +47,52 @@ def get_reward(state_one, state_two):
     return 0.0
 
 
+def get_coords():
+    coords = []
+    for x in range(0, 5):
+        for y in range(0, 5):
+            coords.append([x, y])
+    return np.array(coords)
+
+
+
 def calc_v_star(k_limit):
 
     A = {}
+    coords = get_coords()
+    d_factor = 0.9
 
-    def get_A(coord, k):
-        k = float(k)
+    def get_A(coord):
         coord = np.array(coord)
-        if A.get(str([coord, k])):
-            return A.get(str([coord,k]))
+        if A.get(str(coord)):
+            return A.get(str(coord))
         return 0.0
 
-    def set_A(coord, k, value):
-        k = float(k)
-        coord = np.array(coord)
-        A[str([coord,k])] = value
+    def get_total_v():
+        total_v = 0.0
+        for coord in coords:
+            total_v += get_A(coord)
+        return total_v
 
-    for k in range(k_limit-1,-1,-1):
-        k = float(k)
+    def set_A(coord, value):
+        coord = np.array(coord)
+        A[str(coord)] = value
+
+    diff = 1.0
+
+    while diff > .00001:
+        v = get_total_v()
         for coord in coords:
             actions = get_actions(coord)
-            value = [get_reward(coord, action) + (d_factor**k * get_A(action, k+1.0)) for action in actions]
+            value = [get_reward(coord, action) + (d_factor * get_A(action)) for action in actions]
             value = np.max(value)
-            set_A(coord, k, value)
+            set_A(coord, value)
+        diff = abs(v - get_total_v())
 
     return A
 
 if __name__ == "__main__":
 
     A = calc_v_star(100000)
-    coord = np.array([0,1])
-    coord_b = np.array([4,1])
-    k = float(0)
-    print(A[str([coord,k])])
-    print(A[str([coord_b, float(1)])])
+    coord = np.array([0, 1])
+    print(A[str(coord)])
