@@ -1,12 +1,47 @@
 # Fill in this file
+import numpy as np 
 from src.agent import SimpleAgent
 from src.bandit import NBandits
+from src.nArmBandit import Bandit
 from src.experiment import Experiment, Trial
+
 
 
 if __name__ == "__main__":
 
-    # Exercise 2.4
+    # Exercise 2.1 ----------------------------------------
+
+    # trial function
+    def run_bandit(args):
+        bandit_list = args['bandits']
+        rewards = [] 
+        for bandit in bandit_list:
+            bandit.update()
+            rewards.append(np.sum(bandit.total_rewards))
+
+        reward = np.mean(rewards)
+        return reward
+
+    # - bandit params
+    n_arms = 10
+    e0, e01, e001 = [0]*10, [0.1]*10, [0.01]*10
+    epsilons = [e0, e01, e001]
+    rewards_control = [np.random.normal() for i in range(n_arms)]
+    bandits = [[Bandit(n_arms, e, rewards=rewards_control) for e in ep] for ep in epsilons]
+
+   
+    # Build Trials
+    trial_args = [{'bandits': bandit_list} for bandit_list in bandits]
+    trials = [Trial(run_bandit, trial_arg, 'Trials: ' + str(e[0])) 
+                for trial_arg, e in zip(trial_args, epsilons)]
+    print(trials)
+    # Experiment
+    experiment = Experiment(trials, 'Exercise 2.1')
+    experiment.run_parallel(2000)
+    experiment.produce_plot(show=True)
+
+
+    # Exercise 2.4 ----------------------------------------
 
     def run_iteration_trial_one(nothing):
         bandit = NBandits(10)

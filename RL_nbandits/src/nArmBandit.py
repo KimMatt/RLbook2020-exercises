@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 class Bandit():
 
-    def __init__(self, n, epsilon):
+    def __init__(self, n, epsilon, rewards = None):
         self.epsilon = epsilon
         self.n = n
         self.turns = [1]*n
@@ -62,5 +62,8 @@ class Bandit():
         reward = np.sum(self.total_rewards) / (np.sum(self.turns) - self.n)
         return reward
 
-
+    # Get total rewards
+    def get_total(self):
+        reward = np.sum(self.total_rewards)
+        return reward
 

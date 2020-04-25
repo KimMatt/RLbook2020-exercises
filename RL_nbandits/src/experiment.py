@@ -105,3 +105,5 @@ class Experiment:
 
         if show:
             plt.show()
+        
+        return data
