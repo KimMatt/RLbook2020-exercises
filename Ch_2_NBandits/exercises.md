@@ -12,6 +12,8 @@ These are the cumulative average rewards of running an agents with given epsilon
 
 Epsilon of 0 looks as if it will have the smallest value while epsilon 0.01 looks like it will have the greatest. Although 0.01 starts off worse than 0.1, once it eventually discovers the optimal policy through its slow exploration, it begins to exploit it more than 0.1 would resulting in a greater cumulative reward.
 
+It seems that 0.01 will have the greatest cumulative reward.
+
 ## Exercise 2.2
 *Give pseudocode for a complete algorithm for the n-armed
 bandit problem. Use greedy action selection and incremental computation of
@@ -21,19 +23,13 @@ for each action as a function of how many times it has been tried.*
 
 
 ```
-Initialize policy map [] of length n to val_init (default 0)
-Set alpha = 1.0
+Initialize policy map p_map of length n to val_init (default 0.0)
 Set k map = [1.0 array of length n]
-Set exploration = some constant between 0 and 1
 Repeat while playing:
-    random = random value between 0 and 1 sampled from a uniform distribution
-    If random <= explore:
-        arm = random integer between 0 and n
-    else:
-        arm = index of max value from policy map
+    arm = argmax(p_map)
     reward = bandit(arm)
-    Set k maps[arm] += 1.0
-    policy_map[arm] += (1.0/k maps[arm]) * (reward - policy_map[arm])
+    Set k_map[arm] <- k map[arm] + 1.0
+    p_map[arm] <- p_map[arm] + (1.0/k_map[arm] * (reward - p_map[arm]))
 ```
 
 ## Exercise 2.3
@@ -53,7 +49,6 @@ Q<sub>k+1</sub> = Q<sub>k</sub> + &alpha;<sub>k</sub> * [R<sub>k</sub> - Q<sub>k
 
 = $\alpha_{k}R_{k} + \sum_{i=1}^{k} [\alpha_{k-i}R_{k-i}\prod_{j=0}^{k-2}(1 - \alpha_{k-j})] + Q_{0}\prod_{j=0}^{k-1}(1 - \alpha_{k-j})$
 
- ...
 
 
 ## Exercise 2.4
@@ -70,19 +65,19 @@ These are the cumulative rewards of running the described experiment 100 times w
 
 ```sample wins: 36 const wins: 60 ties: 4```
 
-The reason we ran so many iterations of the experiment was because when we ran them independently, the results were inconsistent. However over a large number of trials the sample methods did worse than the constant method.
+The reason I ran so many iterations of the experiment was because when I ran them independently, the results were inconsistent. However over a large number of trials the sample methods did worse than the constant method.
 
-During the creation of this experiment it was discovered that the sample method actually does better than the constant method when every arm takes a random walk in the same direction. In other words, when the entire n-armed bandits takes a random walk. Here the bandit would move all distributions in the same direction with the same unit.
+During the creation of this experiment it was discovered that the sample method performs beter than the constant method when every arm takes a random walk in the same direction. In other words, when the entire n-armed bandits takes a random walk. Here the bandit would move all distributions in the same direction with the same unit so the optimal actions are not changing. If the definition of nonstationary is strictly when optimal actions are changing then the constant methods perform better than sampled methods for n armed bandit. However, if simply having reward values change is considered nonstationary, then in this case there is an exception to that rule.
 
 ![](figs/Exercise_2.4_1.png)
 
 ```sample wins: 75 const wins: 25 ties: 0```
 
-The sample method will perform better than a constant method on a non stationary problem where the entire environment changes in the same direction.
+The sample method will perform better than a constant problem where the entire environment changes in the same direction.
 
-This is because if all the arms are moving in the same direction, then whatever is optimal will remain optimal. This problem is really only technically stationary. Perhaps stationary should be defined in such a way that the optimal actions must change.
+This is because if all the arms are moving in the same direction, then the optimal arm will not change.
 
-We were curious what would happen if we made a bandit which had a random walk with dependent parts that did not all move in the same direction, but had some sort of alternating rule where if one went up, the other went down. So we did one with an alternating random walk where each arm would do the opposite direction of the previous.
+I was curious what would happen if we made a bandit which had a random walk with dependent parts that did not all move in the same direction, but had some sort of alternating rule where if one went up, the other went down, making them dependent on each other.. So I did one with an alternating random walk where each arm would do the opposite direction of the previous.
 
 ![](figs/Exercise_2.4_2.png)
 
@@ -90,7 +85,7 @@ We were curious what would happen if we made a bandit which had a random walk wi
 
 The result was consistent with the first experiment. Thus, we can see that the constant update method performs better for a nonstationary problem where the optimal arm is subject to change.
 
-With a constant method new rewards are weighed in with equal magnitude to the policy. In sampling methods, the weight of new rewards are diminished as time increases because k grows larger with each time step. When the optimal arm changes it's difficult for the sampling method to take enough steps to make enough change to its policy to reflect this. As time goes on, the sampling method actually get worse at this. This is because it's slowing down the rate of change to its policies while the optimal arm's rate of change is random.
+With a constant method old rewards are weighed less than new rewards. In sampling methods, the weight of each reward is equal. When the optimal arm to pick changes, it's difficult for the sampling method to take enough steps to make enough change to its policy to reflect this. As time goes on, the sampling method actually get worse at this. This is because as time goes on the new rewards have less weight.
 
 
 ## Exercise 2.5
@@ -98,14 +93,17 @@ With a constant method new rewards are weighed in with equal magnitude to the po
 the curve for the optimistic method? What might make this method perform
 particularly better or worse, on average, on particular early plays?*
 
-Because the optimistic initial values are so much larger than the possible values, and because the alpha value is only 0.1, it would take a large number of steps to bring the policy estimates down to reality. During this time, the agent would theoretically bring down the policy values of the less optimal arms with a larger difference than the optimal arm. However it would still end up performing a round-robin like policy. Say the optimal value always returns 1 and the rest return -1. Even if the optimal value is tried first, the rest of the values will still have optimistic policy values of 5 compared to the rest s o it'll try those out as well. After one round robin, the optimal value's policy guess would be `5 - 0.1 * 4 = 4.6` while the non optimal would be `5 - 0.1 * 5 = 4.4`. It would exploit the optimal value but then find that its policy estimate has become lower than the non optimals, and then try those. This process would repeat so the actual rewards resulted would be extremely sporadic until the estimates become closer to the real values.
+The optimistic initial values are much larger than the actual values. Because the alpha value is only 0.1, it would take a large number of steps to bring the policy estimates down to accurate estimates. 
 
-This is an extreme case to illustrate the oscillations.
+Over these time steps, the agent would bring the policy values of the less optimal arms down more than than the optimal arm. However, it would still end up performing a round-robin like policy. 
 
-The spikes can occur because of the same reasons as demonstrated here when the policy values get closer to the real. It would take more steps exploiting the optimal action before its policy value becomes less than the other actions because the difference is smaller, thus the update would be smaller.
+Let's consider a case where the optimal arm always returns 1 and the rest return -1. No matter what arm is tried first, the rest of the arms will have an estimated values larger than it so each policy will be tried at least once. After one round robin, the optimal value's policies would be `5 + 0.1 * (1 - 5) = 4.6` while the non optimal would be `5 + 0.1 * (-1 - 5) = 4.4`. It would exploit the optimal arm but then the non optimal arm's estimated values would be larger again, and then it would perform another round robin. This process will repeat, making the rewards oscillate from choosing each arm round robin.
 
-When the distribution of agents are more evened out, then the agent would play better on early plays. Especially if there are a few close to optimal agents. The agent could end up alternating between six optimal and near optimal arms, and then reducing the policy for four other less optimals. Overall, the more near optimal arms there are, the better this agent would perform at the beginning. If there's only one optimal arm, this agent would perform worse.
+The spikes occur when the estimated values get closer to the actual values. Eventually the round robin would start guessing the optimal arm "x times" instead of once before nuking is value low enough to try all the other values and returning to oscillation. This creates a "spike" in the rewards.
 
+It would take more steps exploiting the optimal action before its estimated value drops lower than suboptimal estimates because the updates to its estimate would be be smaller. The updates to its estimate would be smaller because the difference between the estimate value and actual value is smaller.
+
+When the distribution of actual values have little variance, the agent would receive more cumulative reward on early round because the agent ends up performing a round robin-like pattern.
 
 ## Exercise 2.6
 *Suppose you face a binary bandit task whose true action values change randomly from play to play. Specifically, suppose that for any play the true values of actions 1 and 2 are respectively 0.1 and 0.2 with probability 0.5
@@ -117,11 +115,13 @@ don’t know the true action values). This is an associative search task. What
 is the best expectation of success you can achieve in this task, and how should
 you behave to achieve it?*
 
-The best expectation of success would be to get a cumulative value of 0.5*t where t is the number of steps.
+The best expectation would be a cumulative value of 0.5*t where t is the number of steps.
 
-This is because `0.5*(0.1) + 0.5*(0.9) = 0.5` and `0.5*(0.2) + 0.5*(0.8) = 0.5`. The expected values of playing either move is 0.5. Thus, no matter what combination of moves you play overall, the expected value is 0.5.
+This is because `0.5*(0.1) + 0.5*(0.9) = 0.5` and `0.5*(0.2) + 0.5*(0.8) = 0.5`. The expected value of playing either move is 0.5. Thus, no matter what combination of moves you play overall, the expected value is 0.5.
+
+When the agent knows if its case A or B:
 
 Assuming that you run the task until you get an estimate for each action per task, then the best case you can achieve would be:
-`0.5 * (0.9 + 0.2) = 0.55`. So the best case expected value is 0.55*t.
+`0.5 * (0.9 + 0.2) = 0.55`. So the best case expected value is 0.55*t when the agent chooses greedily.
 
-To get this you should have two policy maps for each case you are facing and perform a standard, mostly greedy agent on both tasks. It would make sense to set initial values to 0.5, and to diminish the exploration factor to 0 over time because this is a stationary task.
+To get this you should have two policy maps for each case you are facing and perform a standard, mostly greedy agent on both tasks. It would make sense to set initial exploration to 0.5, and to diminish exploration to 0 over time because this is a stationary task.
