@@ -32,7 +32,6 @@ def policy_imp(v, pi, p_w, p_l):
                 old_optimal_actions.append(action)
             # calculate q(s,a)
             q = (p_w * v[state + action]) + (p_l * v[state - action])
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if q > optimal_q:
                 new_optimal_actions = [action]
                 optimal_q = q
