@@ -148,6 +148,24 @@ find it convenient to introduce two dummy states corresponding to termination
 with capital of 0 and 100, giving them values of 0 and 1 respectively. Show
 your results graphically, as in Figure 4.6. Are your results stable as θ → 0?*
 
+For ph = 0.25:
+
+![](./figs/gamblers_values_025.png)
+
+![](./figs/gamblers_policies_025.png)
+
+For ph = 0.55:
+
+![](./figs/gamblers_values_055.png)
+
+![](./figs/gamblers_policies_055.png)
+
+My results are mostly stable as 0 -> 0. I've ran the results with ph = 0.4 and they don't exactly match the figures in the textbook. I am worried about this.
+
+It's very interesting to see how huge a difference there is between 0.25 and 0.55. Once the probabilities are in favor of the agent, the optimal policy becomes extremely conservative. When you have the upper hand, there is not much of a point in taking risks.
+
+I also took the liberty of trying 0.49 and .51 and the difference is just as stark.
+
 ## Exercise 4.10
 
 *What is the analog of the value iteration backup (4.10) for
