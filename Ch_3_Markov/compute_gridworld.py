@@ -48,6 +48,11 @@ def get_reward(state_one, state_two):
 
 
 def get_coords():
+    """Returns all possible states on the grid problem
+
+    Returns:
+        coords: np array of states
+    """
     coords = []
     for x in range(0, 5):
         for y in range(0, 5):
@@ -56,43 +61,47 @@ def get_coords():
 
 
 
-def calc_v_star(k_limit):
+def calc_v_star():
+    """Perform value iteration over the grid problem
 
-    A = {}
+    Returns:
+        V: dictionary containing the (state) -> state value
+    """
+    V = {}
     coords = get_coords()
     d_factor = 0.9
 
-    def get_A(coord):
+    def get_V(coord):
         coord = np.array(coord)
-        if A.get(str(coord)):
-            return A.get(str(coord))
+        if V.get(str(coord)):
+            return V.get(str(coord))
         return 0.0
 
-    def get_total_v():
+    def get_total_V():
         total_v = 0.0
         for coord in coords:
-            total_v += get_A(coord)
+            total_v += get_V(coord)
         return total_v
 
-    def set_A(coord, value):
+    def set_V(coord, value):
         coord = np.array(coord)
-        A[str(coord)] = value
+        V[str(coord)] = value
 
     diff = 1.0
 
     while diff > .00001:
-        v = get_total_v()
+        v = get_total_V()
         for coord in coords:
             actions = get_actions(coord)
-            value = [get_reward(coord, action) + (d_factor * get_A(action)) for action in actions]
+            value = [get_reward(coord, action) + (d_factor * get_V(action)) for action in actions]
             value = np.max(value)
-            set_A(coord, value)
-        diff = abs(v - get_total_v())
+            set_V(coord, value)
+        diff = abs(v - get_total_V())
 
-    return A
+    return V
 
 if __name__ == "__main__":
 
-    A = calc_v_star(100000)
+    V = calc_v_star()
     coord = np.array([0, 1])
-    print(A[str(coord)])
+    print(V[str(coord)])
