@@ -14,9 +14,9 @@ def get_actions(state):
         [list]: list of integer actions
     """
     # maximum # of cars that can be moved from l1 to l2
-    max_action = min(5, state[0], 10 - state[1])
+    max_action = min(3, state[0], 12 - state[1])
     # maximum # of cars that can be moved from l2 to l1
-    min_action = -1 * min(5, state[1], 10 - state[0])
+    min_action = -1 * min(3, state[1], 12 - state[0])
     return [i for i in range(min_action, max_action+1)]
 
 
@@ -73,11 +73,11 @@ def policy_eval(v, pi, q_map, possible_states):
 def policy_imp(v, pi, q_map, possible_states):
     policy_stable = True
     for state in possible_states:
-        optimal_actions = []
-        old_optimal_actions = []
         old_pi = dict.copy(pi)
         actions = get_actions(state)
         q_optimal = q(state, actions[0], q_map, v)
+        optimal_actions = []
+        old_optimal_actions = []
         for action in actions:
             q_as = q(state, action, q_map, v)
             if get_PI(action, state, old_pi) > 0.0:
@@ -101,7 +101,8 @@ def initialize_pi(pi, possible_states):
     for state in possible_states:
         actions = get_actions(state)
         for action in actions:
-            set_PI(action, state, 1.0 / len(actions), pi)
+            set_PI(action, state, 0.0, pi)
+        set_PI(0, state, 1.0, pi)
 
 
 if __name__ == "__main__":
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     Q_MAP = pickle.load(open("./pickles/jacks_qmap.p", "rb"))
     V = {}
     PI = {}
-    POSSIBLE_STATES = get_possible_states(10)
+    POSSIBLE_STATES = get_possible_states(12)
     initialize_pi(PI, POSSIBLE_STATES)
     POLICY_STABLE = False
 
@@ -118,6 +119,8 @@ if __name__ == "__main__":
         policy_eval(V, PI, Q_MAP, POSSIBLE_STATES)
         print("improve")
         POLICY_STABLE = policy_imp(V, PI, Q_MAP, POSSIBLE_STATES)
+
+    policy_eval(V, PI, Q_MAP, POSSIBLE_STATES)
 
     pickle.dump(V, open("./pickles/jacks_values.p", "wb"))
     pickle.dump(PI, open("./pickles/jacks_policies.p", "wb"))

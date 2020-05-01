@@ -11,9 +11,9 @@ def get_actions(state):
         [list]: list of integer actions
     """
     # maximum # of cars that can be moved from l1 to l2
-    max_action = min(5, state[0], 10 - state[1])
+    max_action = min(3, state[0], 12 - state[1])
     # maximum # of cars that can be moved from l2 to l1
-    min_action = -1 * min(5, state[1], 10 - state[0])
+    min_action = -1 * min(3, state[1], 12 - state[0])
     return [i for i in range(min_action, max_action+1)]
 
 
@@ -25,7 +25,7 @@ def poiss_p(n, e):
     """Returns the probability of number n being drawn from poisson with expected value e
     Args:
         n ([int]): number
-        e ([int]): expected value
+        e ([int]): expected number
     Returns:
         [float]: probability of n
     """
@@ -48,7 +48,7 @@ def apply_action(state, action):
     """
     l1 = state[0] - action
     l2 = state[1] + action
-    if l1 > 10 or l2 > 10 or l1 < 0 or l2 < 0:
+    if l1 > 12 or l2 > 12 or l1 < 0 or l2 < 0:
         raise Exception
     return np.array([l1, l2])
 
@@ -77,17 +77,31 @@ def get_possible_events(curcar_ns, m1, m2):
         possible_events ([list]): [([rentals, returns], prob)],...,[]]
     """
     possible_events = []
-    if POSS_EVENTS.get(str((curcar_ns, m1, m2))):
+    if POSS_EVENTS.get(str((curcar_ns, m1, m2))) is not None:
         return POSS_EVENTS.get(str((curcar_ns, m1, m2)))
-    for rentals in range(0, curcar_ns):
-        for returns in range(0, 10-(curcar_ns-rentals)):
-            probability = poiss_p(rentals, m1) * poiss_p(returns, m2)
+    cumulative_rental_prob = 0.0
+    for rentals in range(0, curcar_ns+1):
+        rental_prob = poiss_p(rentals, m1)
+        # Since poisson can't create anything 0 or less can just
+        # do 1- total probability of those less than k to find p(>k)
+        if rentals == curcar_ns:
+            rental_prob = 1.0 - cumulative_rental_prob
+        else:
+            cumulative_rental_prob += rental_prob
+        cumulative_return_prob = 0.0
+        for returns in range(0, 12 - curcar_ns + rentals + 1):
+            returns_prob = poiss_p(returns, m2)
+            if returns == 12 - curcar_ns + rentals:
+                returns_prob = 1.0 - cumulative_return_prob
+            else:
+                cumulative_return_prob += returns_prob
+            probability = rental_prob * returns_prob
             possible_events.append(([rentals, returns], probability))
     POSS_EVENTS[str((curcar_ns, m1, m2))] = possible_events
     return possible_events
 
 
-def get_reward(mid_state, l1_rentals, l2_rentals):
+def get_reward(l1_rentals, l2_rentals):
     """Get reward not including cost from action
 
     Args:
@@ -98,13 +112,13 @@ def get_reward(mid_state, l1_rentals, l2_rentals):
     Returns:
         reward: numerical reward
     """
-    return 10 * (min(l1_rentals, mid_state[0]) + min(l2_rentals, mid_state[1]))
+    return 10 * (l1_rentals + l2_rentals)
 
 
 ALL_POSS_EVENTS = {}
 
 
-def get_all_possible_events(mid_state, action):
+def get_all_possible_events(state, action):
     """Get all possible events to occur to state with their probabilities
 
     Args:
@@ -112,25 +126,29 @@ def get_all_possible_events(mid_state, action):
     Returns:
         possible_events ([list]): [[[l1, l2], reward, prob]],...,[]]
     """
-    mid_state = np.array(mid_state)
-    if ALL_POSS_EVENTS.get(str((mid_state, action))):
-        possible_events = ALL_POSS_EVENTS.get(str((mid_state, action)))
+    mid_state = np.array(apply_action(state, action))
+    if ALL_POSS_EVENTS.get(str(mid_state)) is not None:
+        possible_events = ALL_POSS_EVENTS.get(str(mid_state))
     else:
         possible_events = []
-        possible_events_l1 = get_possible_events(mid_state[0], 3.0, 4.0)
-        possible_events_l2 = get_possible_events(mid_state[1], 3.0, 2.0)
+        possible_events_l1 = get_possible_events(mid_state[0], 1.8, 2.4)
+        possible_events_l2 = get_possible_events(mid_state[1], 1.8, 1.2)
         for l1_event in possible_events_l1:
             for l2_event in possible_events_l2:
-                reward = get_reward(mid_state, l1_event[0][0], l2_event[0][0])
+                reward = get_reward(l1_event[0][0], l2_event[0][0])
+                reward += -4 * (min(mid_state[0] - 6, 0) + min(mid_state[1] - 6, 0))
                 probability = l1_event[1] * l2_event[1]
                 result_state = mid_state[:]
                 change = [l1_event[0][1] - l1_event[0]
                           [0], l2_event[0][1] - l2_event[0][0]]
-                result_state = np.add(mid_state, change)
+                result_state = np.add(result_state, change)
                 possible_events.append([result_state, reward, probability])
-        ALL_POSS_EVENTS[str((mid_state, action))] = np.array(possible_events)
+        ALL_POSS_EVENTS[str(mid_state)] = np.array(possible_events)
     # add action penalty to reward
-    action_cost = -2 * abs(action)
+    action_cost = min((-2 * abs(action)) + 2, 0)
+    # If more than 10 cars are kept overnight at a location(after any moving of cars),
+    # then an additional cost of $4 must be incurred to use a second parking lot
+    # (independent of how many cars are kept there).
     np.add(possible_events, np.array(
         [[[0, 0], action_cost, 0] for i in range(len(possible_events))]))
     return possible_events
@@ -149,13 +167,12 @@ def construct_q_map(size):
     q_map = {}
     for state in possible_states:
         for action in get_actions(state):
-            mid_state = apply_action(state, action)
-            possible_events = get_all_possible_events(mid_state, action)
+            possible_events = get_all_possible_events(state, action)
             q_map[str([state, action])] = possible_events
     return q_map
 
 if __name__ == "__main__":
 
-    Q_MAP = construct_q_map(10)
+    Q_MAP = construct_q_map(12)
     print("dumping")
     pickle.dump(Q_MAP, open("./pickles/jacks_qmap.p", "wb"))

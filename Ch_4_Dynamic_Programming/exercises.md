@@ -71,6 +71,12 @@ handled by optimization methods other than dynamic programming. To check
 your program, first replicate the results given for the original problem. If your
 computer is too slow for the full problem, cut all the numbers of cars in half.*
 
+Here are the coresponding graphical results!
+
+![](./figs/jacks_policy_map_new.png)
+
+![](./figs/jacks_values_new.png)
+
 ## Exercise 4.6
 
 *How would policy iteration be defined for action values? Give
