@@ -19,6 +19,10 @@ No I'd expect the results to be identical because in a single episode of blackja
 ## Exercise 5.3
 *What is the backup diagram for Monte Carlo estimation of q⇡?*
 
+It's nearly identical to the backup diagram of v pi except the base is at the (s,a) and ending at the action that leads to a terminal node.
+
+![](./figs/backup_q_pi.png)
+
 ## Exercise 5.4
 *The pseudocode for Monte Carlo ES is inecient because, for each state–
 action pair, it maintains a list of all returns and repeatedly calculates their mean. It would
@@ -26,11 +30,13 @@ be more ecient to use techniques similar to those explained in Section 2.4 to ma
 just the mean and a count (for each state–action pair) and update them incrementally.
 Describe how the pseudocode would be altered to achieve this.*
 
-Keep a single value for each Returns(s,a) stored rather than an entire list.
+Similiar to in section 2.4 we may simply keep track of the number of samples, and keep a running value for Q(s,a).
 
 ```
-Returns(St, At) <- Returns(St, At) + 1/k * (G - Returns(St,At))
-Q(St, At) <- Returns(St, At)
+Initialize Ks(s,a) to 0 for all s in S and a in A
+...
+Ks(St, At) <- Ks(St, At) + 1
+Q(St, At) <- Q(St, At) + 1/k * (G - Q(St,At))
 ```
 
 ## Exercise 5.5
@@ -42,15 +48,15 @@ are the first-visit and every-visit estimators of the value of the nonterminal s
 
 The first visit estimator would have a value of 10 for a +1 return on each of the 10 steps with no discounting.
 
-The every-visit estimators would have 10,9,...,1 return values, in other words T-t if t is the time step and T is the last state.
+The every-visit estimators would have values of: 10,9,...,1. In other words T-t where t is the time step and T is the last state.
 
 ## Exercise 5.6
 *What is the equation analogous to (5.6) for action values Q(s, a) instead of
 state values V (s), again given returns generated using b?*
 
-Q(s,a) = $\sum_{t\inT(s,a)}pt:T(t)-1*Gt / $\sum_{t\inT(s,a)}pt:T(t)-1}$
+Q(s,a) = $\sum_{t\in{T(s,a)}}pt:T(t)-1*Gt$ / $\sum_{t\in{T(s,a)}}pt:T(t)-1$
 
-Basically the same thing except where $t\inT(s,a)$ it is first visits to state s where action a was selected.
+Where $t\in{T(s,a)}$ is its first visits to state s where action a was selected.
 
 ## Exercise 5.7
 *In learning curves such as those shown in Figure 5.3 error generally decreases
@@ -65,7 +71,7 @@ At the start of training with weighted importance-sampling most of the values wi
 method. Suppose that instead an every-visit MC method was used on the same problem.
 Would the variance of the estimator still be infinite? Why or why not?*
 
-Yes, the estimator would still be infinite because the chances of each episode occuring would be
+Yes, the estimator would still be infinite because the expected square
 
 ## Exercise 5.9
 *Modify the algorithm for first-visit MC policy evaluation (Section 5.1) to
@@ -83,11 +89,11 @@ Unless St appears in S0, S1,...,St1:
 *Derive the weighted-average update rule (5.8) from (5.7). Follow the
 pattern of the derivation of the unweighted rule (2.3).*
 
-
-
 ## Exercise 5.11
 *In the boxed algorithm for off-policy MC control, you may have been
 expecting the W update to have involved the importance-sampling ratio pi(At|St)/b(At|St) , but instead it involves 1/b(At|St) . Why is this nevertheless correct?*
+
+
 
 ## Exercise 5.12
 *Racetrack (programming) Consider driving a race car around a turn
@@ -111,6 +117,18 @@ the intended increments. Apply a Monte Carlo control method to this task to comp
 the optimal policy from each starting state. Exhibit several trajectories following the
 optimal policy (but turn the noise o↵ for these trajectories).*
 
+
+Optimal path after 1,000 episodes
+
+![](./figs/optimal_path_1000.png)
+
+Optimal path after 20,000 episodes
+
+![](./figs/optimal_path_20000.png)
+
+Optimal path after 20,000 episodes from another starting point
+
+![](./figs/optimal_path_20000_2.png)
 
 
 ## Exercise 5.13

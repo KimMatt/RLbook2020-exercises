@@ -19,7 +19,10 @@ RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 LINE_WIDTH = 2
 
-VALUES = pickle.load(open("./pickles/race_values.p", "rb"))
+VALUES = pickle.load(open("./pickles/race_learner.p", "rb")).values
+print(VALUES)
+
+#VALUES = pickle.load(open("./pickles/race_values.p", "rb"))
 
 def draw_optimal_path(start_pos, values, track, screen):
     learner = Learner()
@@ -32,17 +35,14 @@ def draw_optimal_path(start_pos, values, track, screen):
         max_action_value = values[str((np.array(position),np.array(learner.actions[0])))]
         result_position = None
         for action in learner.actions:
-            print(action)
-            print(values[str((position, action))])
             if values[str((position, action))] >= max_action_value:
                 max_action_value = values[str((position, action))]
                 max_action = action
-        agent.play(max_action)
+        result = agent.play(max_action)
         result_position = agent.position
         print("drawing line from {} to {}".format(position,result_position))
         pygame.draw.line(screen, RED, (position[0] * BOX_SIZE + (BOX_SIZE/2), position[1] * BOX_SIZE + (
             BOX_SIZE/2)), (result_position[0] * BOX_SIZE + (BOX_SIZE/2), result_position[1] * BOX_SIZE + (BOX_SIZE/2)))
-        result = agent.play(max_action)
         if result == 1:
             end_of_path = True
         position = result_position
