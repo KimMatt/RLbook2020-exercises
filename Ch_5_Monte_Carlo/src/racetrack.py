@@ -6,7 +6,7 @@ class RaceTrack:
     states = None
 
     def __init__(self):
-        race_map = open("./data/map.bin", "r")
+        race_map = open("./maps/map.bin", "r")
         lines = race_map.readlines()
         self.states = {}
         # cheat
