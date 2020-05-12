@@ -49,6 +49,7 @@ are the first-visit and every-visit estimators of the value of the nonterminal s
 The first visit estimator would have a value of 10 for a +1 return on each of the 10 steps with no discounting.
 
 The every-visit estimators would have values of: 10,9,...,1. In other words T-t where t is the time step and T is the last state.
+The estimator would be 1/10 * (10 + 9 + ... + 1) = 5.5
 
 ## Exercise 5.6
 *What is the equation analogous to (5.6) for action values Q(s, a) instead of
@@ -71,7 +72,7 @@ At the start of training with weighted importance-sampling most of the values wi
 method. Suppose that instead an every-visit MC method was used on the same problem.
 Would the variance of the estimator still be infinite? Why or why not?*
 
-Yes, the estimator would still be infinite because the expected square
+Yes, the estimator would still be infinite because for this problem and we can use the same expected values for variance as demonstrated in the text. This is because the importance-sampling ratio values are based on a state's subsequent state-action trajectory. The probability of a specific return value is equivalent to the chance at any given non terminal state that the following episode is of length k. We use the same formulation because the chance of a path following a non terminal state being length k is identical to the chance of a length k episode. The policy ratio is the same as a length k episode's policy value since it's based on the subsequent state-action trajectory.
 
 ## Exercise 5.9
 *Modify the algorithm for first-visit MC policy evaluation (Section 5.1) to
@@ -89,11 +90,33 @@ Unless St appears in S0, S1,...,St1:
 *Derive the weighted-average update rule (5.8) from (5.7). Follow the
 pattern of the derivation of the unweighted rule (2.3).*
 
+$v_n = \frac{\sum^{n-1}{w_kg_k}}{\sum^{n-1}{w_k}}$
+
+$v_n = \frac{\sum^{n-1}{w_kg_k}}{\sum^{n-2}{w_k}} * \frac{\sum^{n-2}{w_k}}{\sum^{n-1}{w_k}}$
+
+$v_n = \frac{w_{n-1}g_{n-1} + \sum^{n-2}{w_kg_k}}{\sum^{n-2}{w_k}} * \frac{\sum^{n-2}{w_k}}{\sum^{n-1}{w_k}}$
+
+$v_n = ( \frac{w_{n-1}g_{n-1}}{\sum^{n-2}{w_k}} + \frac{\sum^{n-2}{w_kg_k}}{\sum^{n-2}{w_k}} )\frac{\sum^{n-2}{w_k}}{\sum^{n-1}{w_k}}$
+
+$v_n = ( \frac{w_{n-1}g_{n-1}}{\sum^{n-2}{w_k}} + v_{n-1})\frac{\sum^{n-2}{w_k}}{\sum^{n-1}{w_k}}$
+
+$v_n = ( \frac{w_{n-1}g_{n-1}}{c_{n-2}} + v_{n-1})\frac{c_{n-2}}{c_{n-1}}$
+
+$v_n = \frac{w_{n-1}g_{n-1}}{c_{n-1}} + \frac{v_{n-1}c_{n-2}}{c_{n-1}}$
+
+$v_n = v_{n-1} + \frac{w_{n-1}g_{n-1}}{c_{n-1}} + \frac{v_{n-1}c_{n-2}}{c_{n-1}} - v_{n-1}$
+
+$v_n = v_{n-1} + \frac{w_{n-1}g_{n-1}}{c_{n-1}} + \frac{v_{n-1}c_{n-2} - v_{n-1}c_{n_1}}{c_{n-1}}$
+
+$v_n = v_{n-1} + \frac{w_{n-1}g_{n-1}}{c_{n-1}} + \frac{-v_{n-1}w_{n-1}}{c_{n-1}}$
+
+$v_n = v_{n-1} + \frac{w_{n-1}}{c_{n-1}}(g_{n-1} - v_{n-1})$
+
 ## Exercise 5.11
 *In the boxed algorithm for off-policy MC control, you may have been
 expecting the W update to have involved the importance-sampling ratio pi(At|St)/b(At|St) , but instead it involves 1/b(At|St) . Why is this nevertheless correct?*
 
-
+Because the weight is only updated if $A_t != \pi(S_t)$. In this case, since the action is the optimal action, the policy \pi will choose it with probability 1, otherwise it will choose it with probability 0 and that's why we exit the episode. Thus, 1/b(At|St) is correct.
 
 ## Exercise 5.12
 *Racetrack (programming) Consider driving a race car around a turn
@@ -134,8 +157,19 @@ Optimal path after 20,000 episodes from another starting point
 ## Exercise 5.13
 *Show the steps to derive (5.14) from (5.12).*
 
+$E[p_{t:T-1}R_{t+1}] = E[\frac{\pi(A_{t}|S_{t})}{b(A_{t}|S_{t})}\frac{\pi(A_{t+1}|S_{t+1})}{b(A_{t+1}|S_{t+1})}...\frac{\pi(A_{T-1}|S_{T-1})}{b(A_{T-1}|S_{T-1})}R_{t+1}]$
+
+$= E[\frac{\pi(A_{t}|S_{t})}{b(A_{t}|S_{t})}]E[\frac{\pi(A_{t+1}|S_{t+1})}{b(A_{t+1}|S_{t+1})}]...E[\frac{\pi(A_{T-1}|S_{T-1})}{b(A_{T-1}|S_{T-1})}]R_{t+1}$
+
+$= E[\frac{\pi(A_{t}|S_{t})}{b(A_{t}|S_{t})}]*1...*1*R_{t+1}$
+
+$= E[\frac{\pi(A_{t}|S_{t})}{b(A_{t}|S_{t})}R_{t+1}]$
+
+$= E[p_{t:t}R_{t+1}]$
 
 ## Exercise 5.14
 *Modify the algorithm for o↵-policy Monte Carlo control (page 111) to use
 the idea of the truncated weighted-average estimator (5.10). Note that you will first need
 to convert this equation to action values.*
+
+
