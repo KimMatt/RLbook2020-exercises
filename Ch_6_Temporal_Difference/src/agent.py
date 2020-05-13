@@ -15,7 +15,7 @@ class Agent:
         self.Q = {}
         self.alpha = 0.5
         self.t = 1
-        self.epsilon = 1/self.t
+        self.epsilon = 0.1
         self.actions = []
         # initialize actions
         for x in range(-1,2):
@@ -33,9 +33,10 @@ class Agent:
     def spawn(self):
         """spawns the agent at a random start_state
         """
-        x = np.random.randint(0,self.windworld.width)
-        y = np.random.randint(0,self.windworld.height)
-        self.state = np.array([x,y])
+        # x = np.random.randint(0,self.windworld.width)
+        # y = np.random.randint(0,self.windworld.height)
+        # self.state = np.array([x,y])
+        self.state = np.array([0,3])
 
 
     def select_action(self):
@@ -57,8 +58,9 @@ class Agent:
         else:
             action = self.actions[np.random.randint(0, len(self.actions))]
         # update t, and epsilon
-        self.t += 1
-        self.epsilon = 1/self.t
+        # self.t += 1
+        # self.epsilon = 1/self.t
+        return action
 
     def play(self, action):
         """from whatever present state, choose an action and take it.

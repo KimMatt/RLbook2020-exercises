@@ -7,16 +7,16 @@ class WindWorld:
         """
         self.winds = []
         ww_map = open("./maps/windworld.bin", "r").readlines()
-        self.height = len(ww_map)
-        self.width = len(ww_map[0])
+        self.height = len(ww_map) - 1
+        self.width = len(ww_map[0]) - 1
         self.rewards = np.ndarray(shape=(self.width, self.height))
 
         for row_ind, row in enumerate(ww_map):
             for item_ind, item in enumerate(row):
                 if row_ind == len(ww_map) - 1:
-                    self.winds.append(item)
-                else:
-                    self.rewards[item_ind][row_ind] = item - 1
+                    self.winds.append(int(item))
+                elif item != "\n":
+                    self.rewards[item_ind][row_ind] = int(item) - 1
 
 
     def time_step(self, state, action):
@@ -31,7 +31,11 @@ class WindWorld:
         """
         # calculate result state
         result_state = np.add(state, action)
-        result_state[1] += self.winds[state[0]]
+        result_state = np.array([state[0]+ action[0], state[1] + action[1]])
+        # apply wind!
+        if self.winds[state[0]] > 0:
+            result_state[1] += self.winds[state[0]] + np.random.randint(-1,2)
+        # keep within map boundaries
         if result_state[0] >= self.width:
             result_state[0] = self.width - 1
         if result_state[0] < 0:
@@ -41,5 +45,5 @@ class WindWorld:
         if result_state[1] >= self.height:
             result_state[1] = self.height - 1
         reward = self.rewards[result_state[0]][result_state[1]]
-        # return reward of result state
+        # return reward and result state
         return reward, result_state

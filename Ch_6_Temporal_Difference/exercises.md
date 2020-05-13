@@ -102,3 +102,39 @@ $= \delta_t + \gamma (G_{t+1} + \gamma Q(S_{t+1},A_{t+1}))$
 $= \delta_t + \gamma \delta_{t+1} + \gamma^2(G_{t+2} - Q(S_{t+2},A_{t+2}))$
 
 $=\sum_{k=t}^{T-1}{\gamma^{k-t}\delta_k}$
+
+## Exercise 6.9
+
+![](./figs/ex_6.9.png)
+
+## Exercise 6.10
+
+![](./figs/ex_6.10.png)
+
+
+## Exercise 6.11
+*Why is Q-learning considered an off-policy control method?*
+
+It is considered an off-policy control method because it's learning the value function for policy $\pi$* that is completely greedy from the actions of policy $pi$ which is only epsilon-greedy. It does this by performing the actions of an epsilon greedy policy, but basing its updates to Q with the next state-action pair being based on a completely greedy policy, taking advantage of the structure of a TD Q-based update rule to ensure that all action-states are updated while finding the values for the optimal policy in order to gaurantee convergence to the optimal policy. Very clever.
+
+## Exercise 6.12
+*Suppose action selection is greedy. Is Q-learning then exactly the same
+algorithm as Sarsa? Will they make exactly the same action selections and weight
+updates?*
+
+Yes, then Q-learning would be the same as fully greedy Sarsa. The key difference is that action selection does not match the update rule.
+
+## Exercise 6.13
+*What are the update equations for Double Expected Sarsa with an
+$\epsilon$-greedy target policy?*
+
+$Q_1(S,A) <- Q_1(S,A) + \alpha(R + \gamma E[Q_2(S,A)])$
+
+Where $E[Q_2(S,A)]$ is based on the $\epsilon$-greedy target policy.
+
+## Exercise 6.14
+*Describe how the task of Jack’s Car Rental (Example 4.2) could be
+reformulated in terms of afterstates. Why, in terms of this specific task, would such a
+reformulation be likely to speed convergence?*
+
+Instead of basing it on action values as we did, we could base our values on the states that result from choosing actions. Then, we would choose actions based on the values of the resulting states since we know what immediate states occur- before the stochastic randomness occurs to them. This would speed up learning because state-action pairs that lead to the same initial state would be treated the same- as they should.
