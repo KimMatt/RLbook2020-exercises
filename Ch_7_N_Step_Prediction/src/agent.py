@@ -71,18 +71,18 @@ class Agent:
         if self.t >= self.n - 1:
             G = np.sum([self.rewards[j] * (self.discount_rate ** i)
                         for i, j in enumerate([j for j in range(self.t - self.n + 1, self.t + 1)])])
-            G += (self.discount_rate ** self.n) * self.values[self.states[-1]]
+            G += (self.discount_rate ** self.n) * self.values[self.states[self.t + 1]]
+            # mathematically, the only difference between update_td and update_td_v_same is that
+            # we are adding v_{t+n-1}(S_t+n) to G instead of V_{t}(S_t)
             update_state = self.states[self.t - self.n + 1]
-            self.values[update_state] += self.alpha * \
-                (G - self.values[update_state])
+            err = G - self.values[update_state]
+            self.values[update_state] += self.alpha * err
 
     def update_td_v_same(self):
-        self.update_values.append(self.values[self.states[-1]])
+        self.update_values.append(self.values[self.states[self.t + 1]])
         if self.t >= self.n - 1:
-            # end on self.t - self.n + 1 so we want to start the 'after count' at self.t - self.n + 1 as well
-            # the last start count should be self.t - 2
-            err = np.sum([self.rewards[j] + self.discount_rate * self.update_values[j+1] -
-                          self.update_values[j] for j in range(self.t - self.n + 1, self.t + 1)])
+            err = np.sum([(self.discount_rate ** i) * (self.rewards[j] + self.discount_rate * self.update_values[j+1]
+                          - self.update_values[j]) for i,j in enumerate([k for k in range(self.t - self.n + 1, self.t + 1)])])
             update_state = self.states[self.t - self.n + 1]
             self.values[update_state] += self.alpha * err
 
