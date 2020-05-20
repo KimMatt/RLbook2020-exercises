@@ -80,11 +80,29 @@ I don't believe this should always occur since we can expect fluctuations but an
 are 1/6 , 2/6 , 3/6 , 4/6 , and 5/6, for states A through E. Describe at least two different ways that
 these could have been computed. Which would you guess we actually used? Why?*
 
-One way would be to calculate the probability that at step N the agent has landed at the terminal state. One could create a function based on N to calculate this probability using a method similar to the one demonstrated here: http://galileo.phys.virginia.edu/classes/152.mf1i.spring02/RandomWalk.html and then estimate its pdf. Then, find the value of its integral as n approaches infinity.
+One way would be to use pure probability and mathematics. Let $P(x,y)$ denote the probability of an agent at node x ending up at node y. x and y $\in$ [s,A,B,C,D,E,e]
 
-Another way is to calculate is to calculate a 'tree' of probabilities by iterating over all possible paths. The tree would have the node being calculated for, and with 0.5 probability weighting for each of the two branches, it leads to its neighbor nodes. The probability would be a sum of the paths to its leaf nodes that result in leading to the right side. The deeper the tree, the more accurate the calculation. This tree has infinite depth so one would calculate it to a certain depth for each state then divide up half the remaining probabilities in proportion to their distance from the terminal state.
+$P(A,s) = 0.5 + 0.5 * P(B,s)$
 
-I would guess the way that you guys actually used was the second because it would take less time and due to the nature of how it is calculated, based on what we know about the problem, as long as one iterates deep enough into the tree, it would be just as accurate as going through the difficulties of the first method.
+$= 0.5 + 0.5(0.5*P(C,s) + 0.5*P(A,s)$
+
+$= 0.5 + 0.25*P(C,s) + 0.25*P(A,s)$
+
+Thanks to symmetry we know $P(C,s) = 0.5$
+
+$= 0.5 + 0.25*0.5 + 0.25*P(A,s)$
+
+$0.75*P(A,s) = 0.625$
+
+$P(A,s) = 0.8333... = 5/6$
+
+$P(E,s) = 1 - P(A,s) = 1/6$
+
+This matches the result! We can find the rest of the probabilities in a similar fashion.
+
+Another way would be to calculate a 'tree' of probabilities by iterating over all possible paths. The tree would have the node being calculated for, and with 0.5 probability weighting for each of the two branches, it leads to its neighbor nodes. The probability would be a sum of the paths to its leaf nodes that result in leading to the right side. The deeper the tree, the more accurate the calculation. This tree has infinite depth so one would calculate it to a certain depth depending on how accurate of an answer is desired
+
+I would guess that the mathematical way was used because it takes less time to do and yields optimally accurate results.
 
 ## Exercise 6.7
 *Design an off policy version of the TD(0) update that can be used with
