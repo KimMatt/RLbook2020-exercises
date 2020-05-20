@@ -26,7 +26,7 @@ class Learner:
 
     def select_action(self):
         # if not exploiting select the maximal action
-        if np.random.rand() > (self.epsilon - (self.epsilon / len(self.actions))):
+        if np.random.rand() > self.epsilon:
             max_action = None
             max_value = self.values.get(str((self.agent.position, self.actions[0])))
             for action in self.actions:
