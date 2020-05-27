@@ -31,3 +31,66 @@ p⌧ was used not in updates, but solely in action selection. That is, suppose t
 p⌧ (St, a) was maximal. Carry out a
 gridworld experiment that tests and illustrates the strengths and weaknesses of this
 alternate approach.*
+
+I experimented using the example from the textbook of the gridworld scenario:
+
+![](./figs/gridworld.png)
+
+Except in reverse, where the optimal path was first.
+
+(Switching at 1000 steps)
+
+Using the following hyperparameters:
+
+```
+self.k = 0.075
+self.alpha = 0.1
+self.epsilon = 0.25
+self.n = 50
+self.discount_rate = 0.95
+```
+
+![](./figs/ex_8.4.png)
+
+![](./figs/ex_8.4_2.png)
+
+The results show that using the exploration bonus in choosing actions and not in updating Q-values resulted in better performance. The main difference between the two Dyna-Q+ methods would be that paths closest the actual paths taken by the policy would be weighed by their immediate "plus factors" and not be influenced by the random "plus factors" created in planning. Which state and action pairs were chosen to be updated would add to the variance and result in more random exploration.
+
+## Exercise 8.5
+*How might the tabular Dyna-Q algorithm shown on page 164 be modified
+to handle stochastic environments? How might this modification perform poorly on
+changing environments such as considered in this section? How could the algorithm be
+modified to handle stochastic environments and changing environments?*
+
+It could store all the R,S_prime pairs that it samples, keeping a fractional count of them and returning the R, S_prime based on the proportions. If two R, S_prime pairs are observed both 5 times then it should return each pair with 50% probability.
+
+It would perform poorly on changing environments because the samples percentages would not adapt to the changing stochastic properties.
+
+There are two ways of handling this. One way could be to only use samples taken within a certain time window, for example only samples within 100 time steps or only basing the model distribution off of the last k observed samples.
+
+## Exercise 8.6
+*The analysis above assumed that all of the b possible next states were
+equally likely to occur. Suppose instead that the distribution was highly skewed, that
+some of the b states were much more likely to occur than most. Would this strengthen or weaken the case for sample updates over expected updates? Support your answer.*
+
+It is hard for me to answer in terms of the analysis where the error reduction is based on the term $\sqrt{\frac{b-1}{bt}}$ since I have no knowledge regarding its derivation.
+
+I would assume that the factor of reduction would be larger when it is based on a skewed branch since a update based on the skewed branch would be more reflective of the overall value as it is more frequently occuring. In this case, then the effect may actually be greater.
+
+In terms of use in a real problem, I believe that the effect of gaining more accurate value backups sooner would be multiplied. If the actual distribution is very much skewed then the difference in accuracy of the model's stochastic estimates from a few steps would be greater.
+
+So I would say that overall, this would strengthen the case of sampled updates over expected updates.
+
+## Exercise 8.7
+*Some of the graphs in Figure 8.8 seem to be scalloped in their early portions,
+particularly the upper graph for b = 1 and the uniform distribution. Why do you think
+this is? What aspects of the data shown support your hypothesis?*
+
+I believe the scallops are due to "back and forth" nature of GPI. As the values are more accurately represented, then the policy must be "tested" and refined. So the scallops are our agent improving by optimizing its policy to the found values, the estimated value for our start state increases as it does this. But when it goes and begins to exploit the paths for these optimal moves, it would discover that some are not as "great" as expected, lowering its value estimate. This process continues as it refines its estimates towards the true values.
+
+## Exercise 8.8
+*(programming) Replicate the experiment whose results are shown in the
+lower part of Figure 8.8, then try the same experiment but with b = 3. Discuss the
+meaning of your results.*
+
+

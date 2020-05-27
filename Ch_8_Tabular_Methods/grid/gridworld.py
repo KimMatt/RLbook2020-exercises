@@ -21,7 +21,5 @@ class GridWorld():
             state ((x,y)): given state
             action ((x_d, y_d)): given action
         """
-        s_prime = (state(0) + action(0), state(1) + action(1))
-        if self.tiles.get(s_prime):
-            return self.tiles[s_prime], s_prime
-        return 0, state
+        s_prime = (state[0] + action[0], state[1] + action[1])
+        return self.tiles[s_prime], s_prime
