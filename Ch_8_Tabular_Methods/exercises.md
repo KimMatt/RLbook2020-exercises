@@ -94,3 +94,8 @@ lower part of Figure 8.8, then try the same experiment but with b = 3. Discuss t
 meaning of your results.*
 
 
+Unfortunately, I was unable to recreate the same results and my computer is not good enough to run b=3!
+
+I may return to this.
+
+![](./figs/ex_8.8_1.png)

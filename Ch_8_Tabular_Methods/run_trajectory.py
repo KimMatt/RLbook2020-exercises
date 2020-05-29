@@ -23,14 +23,11 @@ def average_trials(logs):
         averaged_logs.append(average / len(logs))
     return averaged_logs
 
-
-
-
 if __name__ == "__main__":
-    states = States(1, 10000)
+    states = States(3, 10000)
     agent_trajectory = Agent(states, True)
     agent_uniform = Agent(states, False)
-    trials = 3
+    trials = 15
 
     with Pool(4) as p:
         pool_args = [copy.deepcopy(agent_trajectory) for i in range(
@@ -41,7 +38,7 @@ if __name__ == "__main__":
 
     graph = pd.DataFrame({"on-policy": experiment_logs[0], "uniform": experiment_logs[1]}).plot(
         kind="line", title="Exercise 8.8 b=3")
-    graph.set_xlabel("computation time, in expected updates")
+    graph.set_xlabel("computation time, in expected updates with 10000 states")
     graph.set_ylabel("Value of start state under greedy policy")
     f = graph.get_figure()
-    f.savefig("./figs/ex_8.8_2.png")
+    f.savefig("./figs/ex_8.8_5.png")
