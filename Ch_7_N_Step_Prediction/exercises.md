@@ -255,13 +255,13 @@ $V^-(S_{t}) = \sum_{a}{\pi(a|S_t)Q(S_t,a)}$
 
 $\delta_t = R_{t+1} + \gamma(\sum_{a}{\pi(a|S_{t+1})Q(S_{t+1},a)}) - Q(S_t,A_t)$
 
-Replace $V^-(S_{t})$
+Replace $V^-(S_{t+1})$
 
-$G_{t:h} = R_{t+1} + p_{t+1} \gamma (G_{t+1:h} - Q(S_{t+1},A_{t+1})) + \gamma \sum_{a}{\pi(a|S_t)Q(S_t,a)}$
+$G_{t:h} = R_{t+1} + p_{t+1} \gamma (G_{t+1:h} - Q(S_{t+1},A_{t+1})) + \gamma \sum_{a}{\pi(a|S_{t+1})Q(S_{t+1},a)}$
 
-$= R_{t+1} + \gamma \sum_{a}{\pi(a|S_t)Q(S_t,a)} + p_{t+1} \gamma (G_{t+1:h} - Q(S_{t+1},A_{t+1}))$
+$= R_{t+1} + \gamma \sum_{a}{\pi(a|S_{t+1})Q(S_{t+1},a)} + p_{t+1} \gamma (G_{t+1:h} - Q(S_{t+1},A_{t+1}))$
 
-$= R_{t+1} + \gamma \sum_{a}{\pi(a|S_t)Q(S_t,a)} - Q(S_t,A_t) + Q(S_t,A_t) + p_{t+1} \gamma (G_{t+1:h} - Q(S_{t+1},A_{t+1}))$
+$= R_{t+1} + \gamma \sum_{a}{\pi(a|S_{t+1})Q(S_{t+1},a)} - Q(S_t,A_t) + Q(S_t,A_t) + p_{t+1} \gamma (G_{t+1:h} - Q(S_{t+1},A_{t+1}))$
 
 Sub in our identity
 
