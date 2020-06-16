@@ -120,6 +120,7 @@ and C, with state transitions going deterministically around the ring. A reward 
 received upon arrival in A and otherwise the reward is 0. What are the di↵erential values
 of the three states, using (10.13)?*
 
+Skip
 
 ## Exercise 10.8
 *The pseudocode in the box on page 251 updates R¯t+1 using t as an error
@@ -132,6 +133,35 @@ t errors be (using Equation 10.10)? Which error sequence would produce a more st
 estimate of the average reward if the estimate were allowed to change in response to the
 errors? Why?*
 
+In the case of R - R¯ the three updates would be -1/3, -1/3, 2/3.
+
+In the case of $/delta$ the updates would depend on the initial values. Assuming an initial value of 0 for all states, our updates would be:
+
+$\delta(A) = 0 - 1/3 + 0 - 0 = -1/3$
+$v(A) = 0 - 1/3 + 0 = -1/3$ (according to our differential value definition for TD(0))
+$\delta(B) = 0 - 1/3 + 0 - 0 = -1/3$
+$v(B) = 0 - 1/3 + 0 = -1/3$
+$\delta(C) = 1 - 1/3 + 0 + 1/3 = 1$
+$v(C) = 1 - 1/3 - 1/3 = 1/3$
+
+Now let's consider if the estimate were allowed to change in response to the errors:
+
+R - R¯
+Step 1: R¯ = 0
+Step 2: 0 - 0 = 0 thus R¯ = 0
+Step 3: 1 - 0 = 1 thus R¯ += 1 = 1
+
+$/delta$ case:
+Step 1: R¯ = 0
+Step 2:
+$delta(B) = 0 - 0 + 0 - 0 = 0$
+$v(B) = 0 - 0 + 0 = 0$
+R¯ = 0
+Step 3:
+$delta(C) = 1 - 0 + 0 + 1/3 = 4/3$
+v(C) = 1 - 0 -1/3 = 1/3
+
+Both methods fluctuate our reward. After running a script of the two methods, I found that using $delta$ allowed our changes to converge more quickly, while using R - R¯ seemed to go on forever, actually driving our values to insanely large numbers.
 
 ## Exercise 10.9
 *In the differential semi-gradient n-step Sarsa algorithm, the step-size
