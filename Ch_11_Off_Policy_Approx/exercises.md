@@ -32,12 +32,12 @@ $G_{t:t+n} = R_{t+1} - \bar{R}_t + (\sigma_{t+1}\rho{t+1} + (1-\sigma_{t+1})\pi(
 ## Exercise 11.3
 *(programming) Apply one-step semi-gradient Q-learning to Baird’s counterexample and show empirically that its weights diverge*
 
-Here is our example with off policy semi-gradient q-learning. After just 20 steps the weights diverge to negative infinity, delta becomes too large for python to handle and becomes nans. Note the scale on the top left of the figure.
+Here is our example with off policy semi-gradient q-learning. We can clearly see the weights diverge to negative and positive infinity. Note the scale on the top left of the figure.
 
 ![](./figs/ex11.png)
 
 Code is in baird.py
 
-## Exercise 11.4
-*Prove (11.24). Hint: Write the RE as an expectation over possible statess of the expectation of the squared error given that St = s. Then add and subtract the true value of state s from the error (before squaring), grouping the subtracted true value with the return and the added true value with the estimated value. Then, if you expand the square, the most complex term will end up being zero, leaving you with (11.24).*
+What's interesting is if we treat this problem as an episodic problem, by having no discount rate and $r-\bar{r}$ we do see the weights converge. The values all converge to the same value too. This is consistent with what we learned earlier about the differential values converging to a value that has an arbitrary offset.
 
+![](./figs/ex11_2.png)
