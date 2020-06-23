@@ -6,7 +6,7 @@ import matplotlib
 import pandas as pd
 
 # whether or not we treat this as episodic or continuing task
-episodic = True
+continuing = True
 
 # state vectors as per baird's example
 state_vectors = np.array([[2,0,0,0,0,0,0,1],
@@ -57,7 +57,7 @@ for i in range(iterations):
     action, next_state, reward = step()
     q_a_vect = np.concatenate((state_vectors[state], [action]))
     # Q(S, A) = Q(S, A) + alpha[R +  maxa Q(S', a) - Q(S, A)]
-    if episodic:
+    if continuing:
         delta = (reward - r_t) + calc_max_q(next_state) - np.dot(q_a_vect, weights.T)
         r_t += alpha * delta
     else:

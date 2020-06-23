@@ -38,6 +38,6 @@ Here is our example with off policy semi-gradient q-learning. We can clearly see
 
 Code is in baird.py
 
-What's interesting is if we treat this problem as an episodic problem, by having no discount rate and $r-\bar{r}$ we do see the weights converge. The values all converge to the same value too. This is consistent with what we learned earlier about the differential values converging to a value that has an arbitrary offset.
+What's interesting is if we treat this problem as a continuous problem by having no discount rate and $r-\bar{r}$ we do see the weights converge. The values all converge to the same value too. This is consistent with what we learned earlier about the differential values converging to a value that has an arbitrary offset.
 
 ![](./figs/ex11_2.png)
