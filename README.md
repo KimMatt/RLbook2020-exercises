@@ -1,6 +1,6 @@
 # RL_Projects
 Implementations of methods and exercises from:
-https://web.stanford.edu/class/psych209/Readings/SuttonBartoIPRLBook2ndEd.pdf
+http://incompleteideas.net/book/RLbook2020.pdf
 
 ## Requirements
 python 3.6.0
