@@ -28,20 +28,8 @@ class Agent():
         self.state = (0,3)
         self.v = NN(2)
         self.pi = NN(4)
-
-    def update_V(self, state, action, reward, next_state):
-        """Update q value for the given transition
-
-        Args:
-            state ((x,y)): current state
-            action ((x_d,y_d)): action taken
-            reward (int): reward given from transition
-            next_state ((x,y)): resultant state of transition
-        """
-        _, max_q_value = self.get_max_action(next_state)
-        plus_factor = 0
-        self.Q[(state, action)] += self.alpha * ((reward + plus_factor + (self.discount_rate *
-                                                 max_q_value)) - self.Q[(state, action)])
+        self.loss = 
+        self.optimizer = 
 
     def get_possible_actions(self, state):
         """Give possible actions from given state
@@ -65,18 +53,44 @@ class Agent():
             chosen_action: (x,y)
         """
         actions = self.get_possible_actions(self.state)
-        pi_values = []
+        roll = np.random.rand()
+        h_vals = []
+        # calculate h val for each action based on softmax
         for action in actions:
-            self.pi.forward(torch.tensor([action[0], action[1], self.state[0], self.state[1]]))
+            h_vals.append(math.exp(self.pi(torch.tensor([action[0], action[1], self.state[0], self.state[1]], dtype=torch.float))))
+        total = sum(h_vals)
+        # with a running count, choose the action stochastically
+        running_sum = 0.0
+        for index, h_val in enumerate(h_vals):
+            running_sum += h_val
+            if running_sum / total >= roll:
+                return actions[index]
 
     def play(self):
         """Play a time_step of gridworld and return the (learned) reward
         """
         action = self.get_action()
         reward, s_prime = self.gridworld.time_step(self.state, action)
-        delta = reward + self.discount_rate * self.V(s_prime, self.w) - self.V(state, self.w)
-        self.w += self.alpha_w * delta * # TODO: gradient of value function
-        self.theta += self.alpha_theta * delta * numpy.identity_matrix * #TODO: gradient of ln(pi(A|S,theta))
+        self.state = s_prime
+        self.t = t
+        return action, reward, s_prime
+
+    def grad_step(self, state, action, G, s_prime):
+        """Calculate gradients and update them accordingly based on the given time step
+        """
+        # calculate delta
+        delta = G - self.v(torch.tensor(state, dtype=torch.float))
+        # update gradients wrt their weights of both pi and v with delta 
+        # get the gradient by itself
+        # multiply it by delta
+        # backwards without a loss function.
+        self.loss.backward()
+        for p in model.parameters():
+            p.grad *= delta
+        self.optimizer.step()
+        delta = reward + self.discount_rate * self.v(t_s_prime) - self.v(t_state)
+        self.w += self.alpha_w * delta * # TODO: gradient of value function wrt. w
+        self.theta += self.alpha_theta * delta * numpy.identity_matrix * # TODO: gradient of ln(pi(A|S,theta)) wrt theta
         I = self.discount_rate * I
         self.state = s_prime
         self.t += 1
@@ -85,3 +99,4 @@ class Agent():
     def respawn(self):
         """respawn the agent at starting state"""
         self.state = (3, 5)
+ 
