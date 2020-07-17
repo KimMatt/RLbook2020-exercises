@@ -22,4 +22,5 @@ class GridWorld():
             action ((x_d, y_d)): given action
         """
         s_prime = (state[0] + action[0], state[1] + action[1])
-        return self.tiles[s_prime], s_prime
+        reward = -0.1 if self.tiles[s_prime] == 0 else 1
+        return reward, s_prime
