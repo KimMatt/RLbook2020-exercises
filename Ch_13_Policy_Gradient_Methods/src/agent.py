@@ -3,6 +3,7 @@ import numpy as np
 import math
 import torch
 import torch.optim as optim
+import torch.nn.functional as F
 
 from src.gridworld import GridWorld
 from src.approximator import NN
@@ -13,44 +14,39 @@ device = torch.device("cpu")
 
 class Agent():
 
-    def __init__(self):
+    def __init__(self, episodes, alpha_theta, alpha_w):
         """Initialize agent
         """
         self.gridworld = GridWorld()
-        self.alpha_theta = 0.1
-        self.alpha_w = 0.1
+        # policy func learning rate
+        self.alpha_theta = alpha_theta
+        # value func learning rate
+        self.alpha_w = alpha_w
+        # self.exploration = 0.02
+        # self.min_exploration = 0.01
+        # self.alpha_exploration = math.exp(math.log(self.min_exploration/self.exploration)/episodes)
         # state action pairs that have been encountered, mapped to the time step
         # they were last used
         # ((x,y),(x_d,y_d)) = t
-        self.actions = []
-        self.discount_rate = 0.95
-        for x in range(-1,2):
-            if x == 0:
-                pass
-            else:
-                self.actions.append((x,0))
-                self.actions.append((0,x))
-        self.state = (0,3)
-        self.v = NN(2).to(device)
+        self.actions = [1,2,3,4]
+        self.start_state = self.gridworld.start_state
+        self.state = None
+        self.v = NN(self.gridworld.height + self.gridworld.width, 1).to(device)
         self.v_optim = optim.RMSprop(self.v.parameters(), lr=self.alpha_w)
-        self.pi = NN(4).to(device)
+        self.pi = NN(self.gridworld.height + self.gridworld.width, 4, softmax_out=True).to(device)
         self.pi_optim = optim.RMSprop(self.pi.parameters(), lr=self.alpha_theta)
 
 
-    def get_possible_actions(self, state):
-        """Give possible actions from given state
+    # def exploration_step(self):
+    #     self.exploration = max(self.exploration * self.alpha_exploration, self.min_exploration)
 
-        Args:
-            state ((x,y)): state
+    def state_to_encoding(self, state):
+        """Turn the given state tuple(x,y) into a one hot encoding representation."""
+        y_encoding = [1 if state[1] == i else 0 for i in range(self.gridworld.height)]
+        x_encoding = [1 if state[0] == i else 0 for i in range(self.gridworld.width)]
+        position_encoding = torch.tensor(y_encoding + x_encoding, dtype=torch.float).to(device)
+        return position_encoding
 
-        Returns:
-            [(x_d,y_d)]: A list of actions
-        """
-        actions = []
-        for action in self.actions:
-            if self.gridworld.tiles.get((action[0] + state[0], action[1] + state[1])) is not None:
-                actions.append(action)
-        return actions
 
     def get_action(self):
         """pick an action according to stochastic policy
@@ -58,51 +54,89 @@ class Agent():
         Returns:
             chosen_action: (x,y)
         """
-        actions = self.get_possible_actions(self.state)
-        roll = np.random.rand()
-        h_vals = []
-        # calculate h val for each action based on softmax
-        for action in actions:
-            with torch.no_grad():
-                pi_val = self.pi(torch.tensor([action[0], action[1], self.state[0], self.state[1]], dtype=torch.float).to(device))
-                h_vals.append(math.exp(pi_val))
-        total = sum(h_vals)
+        actions = self.actions
         # with a running count, choose the action stochastically
+        roll = np.random.random()
+        # if roll < self.exploration:
+        #    action_index = np.random.randint(len(actions))
+        # else:
+        pi_vals = []
+        # calculate h val for each action based on softmax
+        with torch.no_grad():
+            state_encoding = self.state_to_encoding(self.state)
+            pi_vals = self.pi(state_encoding)
+            print(pi_vals)
         running_sum = 0.0
-        for index, h_val in enumerate(h_vals):
-            running_sum += h_val
-            if running_sum / total >= roll:
-                return actions[index]
+        for i, pi_val in enumerate(pi_vals):
+            running_sum += pi_val
+            if running_sum >= roll or i == len(actions) - 1:
+                action_index = i
+                break
+        return actions[action_index], action_index
+
 
     def play_step(self):
         """Play a time_step of gridworld and return the (learned) reward
         """
         state = self.state
-        action = self.get_action()
-        reward, s_prime = self.gridworld.time_step(self.state, action)
-        self.state = s_prime
-        return state, action, reward, s_prime
+        action, action_index = self.get_action()
+        reward, next_state = self.gridworld.time_step(self.state, action)
+        self.state = next_state
+        return state, action_index, reward, next_state
 
-    def grad_step(self, state, action, G, t):
-        """Calculate gradients and update them accordingly based on the given time step
-        """
-        # update w values based on value function
-        self.v_optim.zero_grad()
-        value = self.v(torch.tensor([state[0], state[1]], dtype=torch.float).to(device))
-        delta = G - value
+
+    def backprop_value(self, state_encoding, advantage):
+        """Give state and advantage for time step, backpropagate value's weights."""
+        self.v.zero_grad()
+        value = self.v(state_encoding)
         value.backward()
         for p in self.v.parameters():
-            p.grad[:] = p.grad * delta
-        self.v_optim.step()
-        # update theta values based on pi function
-        self.pi_optim.zero_grad()
-        ln_pi_val = torch.log(self.pi(torch.tensor([action[0], action[1], state[0], state[1]], dtype=torch.float).to(device)))
+            p.data += self.alpha_w * p.grad.data * advantage
+
+
+    def backprop_pi(self, state_encoding, advantage, action_index):
+        """Give state and advantage for time step, backpropagate pi's weights."""
+        self.pi.zero_grad()
+        pi_val = self.pi(state_encoding)[action_index]
+        # epsilon to prevent log(0) making nans
+        epsilon = 0.00001
+        ln_pi_val = torch.log(pi_val + epsilon)
         ln_pi_val.backward()
         for p in self.pi.parameters():
-            p.grad[:] = p.grad * delta * self.discount_rate ** t
-        self.pi_optim.step()
+            p.data += self.alpha_theta * p.grad.data * advantage 
+
+
+    def reinforce_with_baseline(self, state, action_index, G):
+        """Calculate gradients and update them accordingly based on the given time step."""
+        state_encoding = self.state_to_encoding(state)
+        with torch.no_grad():
+            value_state = self.v(state_encoding)
+        advantage = G - value_state
+        # update w values based on advantage
+        self.backprop_value(state_encoding, advantage)
+        # update theta values based on advantage
+        self.backprop_pi(state_encoding, advantage, action_index)
+
+
+    def actor_critic(self, state, next_state, action_index, r):
+        """One step of actor_critic."""
+        state_encoding = self.state_to_encoding(state)
+        next_state_encoding = self.state_to_encoding(next_state)
+        with torch.no_grad():
+            value_state = self.v(state_encoding)
+            value_next_state = self.v(next_state_encoding)
+        advantage = r + value_next_state - value_state
+        # update w values based on advantage
+        self.backprop_value(state_encoding, advantage)
+        # update theta values based on advantage
+        self.backprop_pi(state_encoding, advantage, action_index)
+
+
+    def actor_critic_eg_trace(self, state, next_state, action_index, r):
+        pass
+
 
     def respawn(self):
         """respawn the agent at starting state"""
-        self.state = (3, 5)
+        self.state = self.start_state
  

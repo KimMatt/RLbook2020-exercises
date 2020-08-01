@@ -1,35 +1,56 @@
 from src.agent import Agent
 import pandas as pd
-from ..utils.experiment import Experiment
 
 if __name__ == "__main__":
-    agent = Agent()
+    episodes = 2000
     dc_factor = agent.discount_rate
-    episodes = 1000
     time_steps = []
+    MODE = 'baseline'
 
-    for episode in range(episodes):
-        agent.respawn()
-        print("episode: ", episode)
-        # play an episode
-        reward = 0
-        steps = []
-        time_step = 0
-        while reward != 1:
-            state, action, reward, _ = agent.play_step()
-            steps.append((state, action, reward))
-            time_step += 1
-        time_steps.append(time_step)
-        # calculate G values at each step
-        Gs = [steps[-1][2]]
-        for i in range(2,len(steps)+1):
-            Gs.insert(0, steps[-i][2] + dc_factor*Gs[0])
-        for t in range(len(steps)):
-            agent.grad_step(steps[t][0], steps[t][1], Gs[t], t)
+    if MODE == 'baseline':
+        agent = Agent(episodes, 0.000001, 0.000001)
+        for episode in range(episodes):
+            agent.respawn()
+            print("beginning episode {}".format(episode))
+            # play an episode
+            reward = 0
+            steps = []
+            state = agent.state
+            while reward != 0.1:
+                _, action_index, reward, next_state = agent.play_step()
+                steps.append((state, action_index, reward))
+                state = next_state
+                print("episode: {}, step: {}, state:{}".format(episode, len(steps), next_state))
+            print("episode done, steps taken: {}".format(len(steps)))
+            # agent.exploration_step()
+            time_steps.append(len(steps))
+            # calculate G values at each step
+            Gs = [steps[-1][2]]
+            for i in range(2,len(steps)+1):
+                Gs.insert(0, steps[-i][2] + dc_factor*Gs[0])
+            for t in range(len(steps)):
+                agent.reinforce_with_baseline(steps[t][0], steps[t][1], Gs[t])
+    elif MODE == 'actor_critic':
+        agent = Agent(episodes, 0.001, 0.01)
+        for episode in range(episodes):
+            agent.respawn()
+            print("beginning episode {}".format(episode))
+            # play an episode
+            steps = 0
+            reward = 0
+            while reward != 0.1:
+                state, action_index, reward, next_state = agent.play_step()
+                agent.actor_critic(state, next_state, action_index, reward)
+                print("episode: {}, step: {}, state:{}".format(episode, steps, next_state))
+                steps += 1
+            print("episode done, steps taken: {}".format(steps))
+            # agent.exploration_step()
+            time_steps.append(steps)
+
 
     graph = pd.DataFrame({"time_steps": time_steps}).plot(
-        kind="line", title="Gridworld with 2 layer NN, PGM")
+        kind="line", title="Gridworld {}".format(MODE))
     graph.set_xlabel("episodes")
     graph.set_ylabel("time steps")
     f = graph.get_figure()
-    f.savefig("./figs/gridworld_pgm.png")
+    f.savefig("./figs/gridworld_{}_1layer.png".format(MODE))
