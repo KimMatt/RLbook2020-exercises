@@ -3,12 +3,12 @@ import pandas as pd
 
 if __name__ == "__main__":
     episodes = 2000
-    dc_factor = agent.discount_rate
     time_steps = []
-    MODE = 'baseline'
+    MODE = 'eg_trace'
 
     if MODE == 'baseline':
         agent = Agent(episodes, 0.000001, 0.000001)
+        dc_factor = agent.dc_factor
         for episode in range(episodes):
             agent.respawn()
             print("beginning episode {}".format(episode))
@@ -22,7 +22,6 @@ if __name__ == "__main__":
                 state = next_state
                 print("episode: {}, step: {}, state:{}".format(episode, len(steps), next_state))
             print("episode done, steps taken: {}".format(len(steps)))
-            # agent.exploration_step()
             time_steps.append(len(steps))
             # calculate G values at each step
             Gs = [steps[-1][2]]
@@ -44,7 +43,21 @@ if __name__ == "__main__":
                 print("episode: {}, step: {}, state:{}".format(episode, steps, next_state))
                 steps += 1
             print("episode done, steps taken: {}".format(steps))
-            # agent.exploration_step()
+            time_steps.append(steps)
+    elif MODE == "eg_trace":
+        agent = Agent(episodes, 0.001, 0.01)
+        for episode in range(episodes):
+            agent.respawn()
+            print("beginning episode {}".format(episode))
+            # play an episode
+            steps = 0
+            reward = 0
+            while reward != 0.1:
+                state, action_index, reward, next_state = agent.play_step()
+                agent.actor_critic_eg_trace(state, next_state, action_index, reward)
+                print("episode: {}, step: {}, state:{}".format(episode, steps, next_state))
+                steps += 1
+            print("episode done, steps taken: {}".format(steps))
             time_steps.append(steps)
 
 
