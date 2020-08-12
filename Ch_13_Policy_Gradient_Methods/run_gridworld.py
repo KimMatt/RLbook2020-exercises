@@ -7,7 +7,7 @@ if __name__ == "__main__":
     MODE = 'eg_trace'
 
     if MODE == 'baseline':
-        agent = Agent(episodes, 0.000001, 0.000001)
+        agent = Agent(0.000001, 0.000001)
         dc_factor = agent.dc_factor
         for episode in range(episodes):
             agent.respawn()
@@ -30,7 +30,7 @@ if __name__ == "__main__":
             for t in range(len(steps)):
                 agent.reinforce_with_baseline(steps[t][0], steps[t][1], Gs[t])
     elif MODE == 'actor_critic':
-        agent = Agent(episodes, 0.001, 0.01)
+        agent = Agent(0.001, 0.01)
         for episode in range(episodes):
             agent.respawn()
             print("beginning episode {}".format(episode))
@@ -45,7 +45,7 @@ if __name__ == "__main__":
             print("episode done, steps taken: {}".format(steps))
             time_steps.append(steps)
     elif MODE == "eg_trace":
-        agent = Agent(episodes, 0.001, 0.01)
+        agent = Agent(0.001, 0.01)
         for episode in range(episodes):
             agent.respawn()
             print("beginning episode {}".format(episode))

@@ -14,7 +14,7 @@ device = torch.device("cpu")
 
 class Agent():
 
-    def __init__(self, episodes, alpha_theta, alpha_w):
+    def __init__(self, alpha_theta, alpha_w):
         """Initialize agent"""
         self.gridworld = GridWorld()
         # policy func learning rate
